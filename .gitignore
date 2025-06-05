@@ -1,0 +1,7 @@
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+.pnp.*
+.env
+.env.keys
+node_modules

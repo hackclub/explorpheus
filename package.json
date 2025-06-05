@@ -1,0 +1,9 @@
+{
+  "name": "explorpheus",
+  "type": "module",
+  "dependencies": {
+    "@slack/web-api": "^7.9.2",
+    "dotenv": "^16.5.0",
+    "zod": "^3.25.51"
+  }
+}
