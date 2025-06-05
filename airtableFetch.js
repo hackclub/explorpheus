@@ -1,7 +1,8 @@
 // @see stolen from https://github.com/hackclub/arrpheus/blob/main/src/airtableFetch.ts
 export class AirtableFetch {
     // same api as Airtable-Plus but uses raw fetch() with no retry logic
-    urlBase = 'https://middleman.hackclub.com/airtable/v0/'
+    // urlBase = 'https://middleman.hackclub.com/airtable/v0/'
+    urlBase = "https://api.airtable.com/v0/"
     constructor({ apiKey, baseID, tableName }) {
         this.apiKey = apiKey;
         this.baseID = baseID;
@@ -77,6 +78,24 @@ export class AirtableFetch {
     async updateBulk(records, userAgent = 'Explorpheus/1.0.0') {
         const res = await fetch(this.url, {
             method: 'PATCH',
+            headers: {
+                Authorization: `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json',
+                'User-Agent': userAgent
+            },
+            body: JSON.stringify({records})
+        })
+        try{
+            const json = await res.json()
+            return json
+        } catch (e) {
+            console.log(e)
+            return {error: e, ok: false}
+        }
+    }
+      async createBulk(records, userAgent = 'Explorpheus/1.0.0') {
+        const res = await fetch(this.url, {
+            method: 'POST',
             headers: {
                 Authorization: `Bearer ${this.apiKey}`,
                 'Content-Type': 'application/json',
