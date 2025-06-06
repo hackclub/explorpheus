@@ -17,7 +17,6 @@ let env = z.object({
 if(env.error) {
     throw env.error
 }
-
 env = env.data
 const client = new WebClient(env.SLACK_XOXB)
 const airtable = new AirtableFetch({
@@ -27,6 +26,8 @@ const airtable = new AirtableFetch({
 })
 const app = express()
 const liveQueue = []
+const THE_CHANNEL_LIST = "C08MYN7HVN2,C08N1NWKEF4,C016DEDUL87,C75M7C0SY" // #journey,#journey-feed,#cdn,#welcome
+const FAT_MESSAGE = `Hey there! there will be steps here and i think a magic link for u to sign in!\n> currently in dev so uh meow meow meow meow :3 \nhttps://hc-cdn.hel1.your-objectstorage.com/s/v3/ed8e75c6b1d195981821918e924bf88d15b7b617_image.png`
 app.use(express.json())
 app.get('/', (req,res) => res.send('hi:3'))
 
@@ -113,14 +114,22 @@ async function doTheQueue() {
         if(item.status == "Invitation Sent") continue;
         inviteGuestToSlackToriel({
             email: item.email,
-            channels: "C07LEEB50KD",
+            channels: THE_CHANNEL_LIST,
             env 
-        }).then((_d)  => {
+        }).then(async (_d)  => {
 console.log(_d, "A OK")
 item.status = "Invitation Sent"
 modifying.push(item)
+// lets rotate to sending them with how to blah blah
+// get user by email
+const user = await client.users.lookupByEmail({ email: item.email  })
+console.log(user)
+await client.chat.postMessage({
+    channel: user.user.id,
+    text: FAT_MESSAGE
+})
         }).catch((err ) => {
-console.err(err, "NOOOO")
+console.error(err, "NOOOO")
 item.status = "Failed, pending retry"
 if(typeof item.failed_attempts !== "number") item.failed_attempts = 0;
 item.failed_attempts += 1
@@ -130,6 +139,6 @@ modifying.push(item)
 }
 doTheQueueLoop()
 app.get('/healthcheck',(req,res) => {res.sendStatus(200)})
-app.listen(8001, () => {
+app.listen(process.env.PORT ||8001, () => {
     console.log(`up`)
 })
