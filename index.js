@@ -1,7 +1,8 @@
 import "dotenv/config"
 import express from "express"
 // import { WebClient } from "@slack/web-api"
-const { WebClient } = await import('@slack/web-api');
+const  App  = await import('@slack/bolt');
+console.log([App.default])
 import { inviteGuestToSlackToriel} from "./undocumented.js"
 import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
@@ -12,13 +13,19 @@ let env = z.object({
     SLACK_XOXD: z.string(),
     AIRTABLE_KEY: z.string(),
     BASE_ID: z.string(),
-    API_KEY: z.string()
+    API_KEY: z.string(),
+    APP_TOKEN: z.string()
 }).safeParse(process.env)
 if(env.error) {
     throw env.error
 }
 env = env.data
-const client = new WebClient(env.SLACK_XOXB)
+const aclient = new App.default.App({
+  token: env.SLACK_XOXB,
+  socketMode: true,
+  appToken: env.APP_TOKEN
+});
+const client = aclient.client
 const airtable = new AirtableFetch({
     apiKey: env.AIRTABLE_KEY,
     baseID: env.BASE_ID,
@@ -27,7 +34,6 @@ const airtable = new AirtableFetch({
 const app = express()
 const liveQueue = []
 const THE_CHANNEL_LIST = "C08MYN7HVN2,C08N1NWKEF4,C016DEDUL87,C75M7C0SY" // #journey,#journey-feed,#cdn,#welcome
-const FAT_MESSAGE = `Hey there! there will be steps here and i think a magic link for u to sign in!\n> currently in dev so uh meow meow meow meow :3 \nhttps://hc-cdn.hel1.your-objectstorage.com/s/v3/ed8e75c6b1d195981821918e924bf88d15b7b617_image.png`
 app.use(express.json())
 app.get('/', (req,res) => res.send('hi:3'))
 
@@ -137,8 +143,60 @@ modifying.push(item)
         })
     }
 }
-doTheQueueLoop()
+// doTheQueueLoop()
 app.get('/healthcheck',(req,res) => {res.sendStatus(200)})
 app.listen(process.env.PORT ||8001, () => {
     console.log(`up`)
+})
+// on team join -> hit bens endpoint -> ??
+aclient.event('team_join', async ({ event, context }) => {
+    // check if user is for this - if so dm them.
+    console.log(event.user.id)
+    // get user email 
+    const info = await client.users.info({ user: event.user.id }).then(d=>d.user.profile)
+    const checkOnServersBackend = await fetch(`?email=${info.email}&slack_id=${event.user.id}`).then(d=>d.status==200)
+    if(!checkOnServersBackend) {
+        // not my problem 
+        return;
+
+    }
+    let MAGIC_LINK = null || "https://saahild.com/";
+    // dm them
+    client.chat.postMessage({
+        channel: event.user.id, 
+       blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '*Welcome, explorer!* Thank you for joining the hackclub slack! here is the steps you are at: \n1. >-- Join the hackclub Slack --<\n2. Connect to hackatime\n3. Work on your project..\n before you connect to hackatime you must Click below to continue…'
+        }
+      },
+      {
+        type: 'image',
+        image_url: `https://hc-cdn.hel1.your-objectstorage.com/s/v3/dc669e8020030bd8fb71989651c205f7d7c41c28_clickherepurple_360.gif`,
+        alt_text: 'Click Here',
+        title: {
+          type: 'plain_text',
+          text: 'CLICK HERE',
+          emoji: true
+        }
+      },
+      {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            text: {
+              type: 'plain_text',
+              text: 'Click Here',
+              emoji: true
+            },
+            url: MAGIC_LINK,
+            action_id: 'magic_link_button'
+          }
+        ]
+      }
+    ]
+    })
 })
