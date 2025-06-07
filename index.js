@@ -154,13 +154,14 @@ aclient.event('team_join', async ({ event, context }) => {
     console.log(event.user.id)
     // get user email 
     const info = await client.users.info({ user: event.user.id }).then(d=>d.user.profile)
-    const checkOnServersBackend = await fetch(`?email=${info.email}&slack_id=${event.user.id}`).then(d=>d.status==200)
-    if(!checkOnServersBackend) {
+    const checkOnServersBackend = await fetch(`https://52mos.hackclub.malted.dev/explorpheus/magic-link?token=${env.API_KEY}&email=${info.email}&slack_id=${event.user.id}`)
+    if(!checkOnServersBackend.status !== 200) {
         // not my problem 
+        console.log("bad - ")
         return;
-
     }
-    let MAGIC_LINK = null || "https://saahild.com/";
+    const json = await checkOnServersBackend.json()
+    let MAGIC_LINK = json.link || "https://saahild.com/";
     // dm them
     client.chat.postMessage({
         channel: event.user.id, 
