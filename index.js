@@ -2,7 +2,7 @@ import "dotenv/config"
 import express from "express"
 // import { WebClient } from "@slack/web-api"
 const  App  = await import('@slack/bolt');
-console.log([App.default])
+// console.log([App.default])
 import { inviteGuestToSlackToriel} from "./undocumented.js"
 import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
@@ -14,16 +14,22 @@ let env = z.object({
     AIRTABLE_KEY: z.string(),
     BASE_ID: z.string(),
     API_KEY: z.string(),
-    APP_TOKEN: z.string()
+    APP_TOKEN: z.string().optional(),
+    SLACK_SIGNING_SECRET: z.string()
 }).safeParse(process.env)
 if(env.error) {
     throw env.error
 }
 env = env.data
+const receiver = new App.default.ExpressReceiver({
+  signingSecret: env.SLACK_SIGNING_SECRET,
+  endpoints: '/slack/events', // This is the default endpoint for Slack events
+});
 const aclient = new App.default.App({
   token: env.SLACK_XOXB,
-  socketMode: true,
-  appToken: env.APP_TOKEN
+//   socketMode: true,
+//   appToken: env.APP_TOKEN,
+  receiver
 });
 const client = aclient.client
 const airtable = new AirtableFetch({
@@ -31,7 +37,7 @@ const airtable = new AirtableFetch({
     baseID: env.BASE_ID,
     tableName: "explorpheus"
 })
-const app = express()
+const app = receiver.app;
 const liveQueue = []
 const THE_CHANNEL_LIST = "C08MYN7HVN2,C08N1NWKEF4,C016DEDUL87,C75M7C0SY" // #journey,#journey-feed,#cdn,#welcome
 app.use(express.json())
@@ -168,7 +174,7 @@ aclient.event('team_join', async ({ event, context }) => {
     const json = await checkOnServersBackend.json()
     let MAGIC_LINK = json.link || "https://saahild.com/";
     // dm them
-    client.chat.postMessage({
+   const msg = await client.chat.postMessage({
         channel: event.user.id, 
        blocks: [
       {
@@ -186,6 +192,13 @@ aclient.event('team_join', async ({ event, context }) => {
           type: 'plain_text',
           text: 'CLICK HERE',
           emoji: true
+        }
+      },
+      {
+        type: "section",
+        text: {
+            type: "mrkdwn",
+            text: "⬇️ ⬇️ ⬇️"
         }
       },
       {
@@ -210,8 +223,15 @@ aclient.event('team_join', async ({ event, context }) => {
         fields: {
             email: info.email,
             status: "Invitation Sent",
-            identifier: event.user.id
+            identifier: event.user.id,
+            message_link_sent_to_user: await aclient.client.chat.getPermalink({
+                channel: event.user.id,
+                message_ts: msg.ts,
+            }).then(d=>d.permalink)
         }
     }])
 })
-aclient.start()
+aclient.start(process.env.PORT).then(() => {
+    console.log(`uppies`)
+})
+// aclient.r 
