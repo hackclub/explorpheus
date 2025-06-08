@@ -204,5 +204,13 @@ aclient.event('team_join', async ({ event, context }) => {
       }
     ]
     })
+    // update airtable by creating a record
+    await airtable.createBulk([{
+        fields: {
+            email: info.email,
+            status: "Invitation Sent",
+            identifier: event.user.id
+        }
+    }])
 })
 aclient.start()
