@@ -152,9 +152,9 @@ modifying.push(item)
 }
 // doTheQueueLoop()
 app.get('/healthcheck',(req,res) => {res.sendStatus(200)})
-app.listen(process.env.PORT ||8001, () => {
-    console.log(`up`)
-})
+// app.listen(process.env.PORT ||8001, () => {
+//     console.log(`up`)
+// })
 // on team join -> hit bens endpoint -> ??
 aclient.event('team_join', async ({ event, context }) => {
     // console.log(event)
@@ -234,4 +234,5 @@ aclient.event('team_join', async ({ event, context }) => {
 aclient.start(process.env.PORT).then(() => {
     console.log(`uppies`)
 })
+
 // aclient.r 
