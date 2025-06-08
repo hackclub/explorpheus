@@ -150,14 +150,18 @@ app.listen(process.env.PORT ||8001, () => {
 })
 // on team join -> hit bens endpoint -> ??
 aclient.event('team_join', async ({ event, context }) => {
+    // console.log(event)
     // check if user is for this - if so dm them.
     console.log(event.user.id)
     // get user email 
     const info = await client.users.info({ user: event.user.id }).then(d=>d.user.profile)
-    const checkOnServersBackend = await fetch(`https://52mos.hackclub.malted.dev/explorpheus/magic-link?token=${env.API_KEY}&email=${info.email}&slack_id=${event.user.id}`)
-    if(!checkOnServersBackend.status !== 200) {
+    const checkOnServersBackend = await fetch(`https://52mos.hackclub.malted.dev/explorpheus/magic-link?token=${env.API_KEY}&email=${info.email}&slack_id=${event.user.id}`, {
+        method: "POST"
+    })
+    if(checkOnServersBackend.status !== 200) {
         // not my problem 
-        console.log("bad - ")
+        // fun fact this had ran when status was 200 idk why plz kill me
+        console.log("bad - ", checkOnServersBackend.status, info.email, event.user.id)
         return;
     }
     const json = await checkOnServersBackend.json()
@@ -201,3 +205,4 @@ aclient.event('team_join', async ({ event, context }) => {
     ]
     })
 })
+aclient.start()
