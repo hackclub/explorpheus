@@ -54,6 +54,7 @@ app.post('/new_user', (req,res) => {
         "OK"
     )
 })
+
 function NoDiff(obj1, obj2) {
     if(typeof obj1.email !== 'string' || typeof obj2.email !== 'string') {
         return true; // dont care atp
