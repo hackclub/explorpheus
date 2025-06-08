@@ -174,60 +174,61 @@ aclient.event('team_join', async ({ event, context }) => {
     const json = await checkOnServersBackend.json()
     let MAGIC_LINK = json.link || "https://saahild.com/";
     // dm them
-   const msg = await client.chat.postMessage({
-        channel: event.user.id, 
-       blocks: [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: '*Welcome, explorer!* Thank you for joining the hackclub slack! here is the steps you are at: \n1. >-- Join the hackclub Slack --<\n2. Connect to hackatime\n3. Work on your project..\n before you connect to hackatime you must Click below to continue…'
-        }
-      },
-      {
-        type: 'image',
-        image_url: `https://hc-cdn.hel1.your-objectstorage.com/s/v3/dc669e8020030bd8fb71989651c205f7d7c41c28_clickherepurple_360.gif`,
-        alt_text: 'Click Here',
-        title: {
-          type: 'plain_text',
-          text: 'CLICK HERE',
-          emoji: true
-        }
-      },
-      {
-        type: "section",
-        text: {
-            type: "mrkdwn",
-            text: "⬇️ ⬇️ ⬇️"
-        }
-      },
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: 'Click Here',
-              emoji: true
-            },
-            url: MAGIC_LINK,
-            action_id: 'magic_link_button'
-          }
-        ]
-      }
-    ]
-    })
+//    const msg = await client.chat.postMessage({
+//         channel: event.user.id, 
+//        blocks: [
+//       {
+//         type: 'section',
+//         text: {
+//           type: 'mrkdwn',
+//           text: '*Welcome, explorer!* Thank you for joining the hackclub slack! here is the steps you are at: \n1. >-- Join the hackclub Slack --<\n2. Connect to hackatime\n3. Work on your project..\n before you connect to hackatime you must Click below to continue…'
+//         }
+//       },
+//       {
+//         type: 'image',
+//         image_url: `https://hc-cdn.hel1.your-objectstorage.com/s/v3/dc669e8020030bd8fb71989651c205f7d7c41c28_clickherepurple_360.gif`,
+//         alt_text: 'Click Here',
+//         title: {
+//           type: 'plain_text',
+//           text: 'CLICK HERE',
+//           emoji: true
+//         }
+//       },
+//       {
+//         type: "section",
+//         text: {
+//             type: "mrkdwn",
+//             text: "⬇️ ⬇️ ⬇️"
+//         }
+//       },
+//       {
+//         type: 'actions',
+//         elements: [
+//           {
+//             type: 'button',
+//             text: {
+//               type: 'plain_text',
+//               text: 'Click Here',
+//               emoji: true
+//             },
+//             url: MAGIC_LINK,
+//             action_id: 'magic_link_button'
+//           }
+//         ]
+//       }
+//     ]
+//     })
     // update airtable by creating a record
     await airtable.createBulk([{
         fields: {
             email: info.email,
-            status: "Invitation Sent",
+            status: "Pending",
             identifier: event.user.id,
-            message_link_sent_to_user: await aclient.client.chat.getPermalink({
-                channel: msg.channel,
-                message_ts: msg.ts,
-            }).then(d=>d.permalink)
+            // message_link_sent_to_user: await aclient.client.chat.getPermalink({
+            //     channel: msg.channel,
+            //     message_ts: msg.ts,
+            // }).then(d=>d.permalink)
+            magic_link: MAGIC_LINK
         }
     }])
 })
