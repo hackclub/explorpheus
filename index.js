@@ -225,7 +225,7 @@ aclient.event('team_join', async ({ event, context }) => {
             status: "Invitation Sent",
             identifier: event.user.id,
             message_link_sent_to_user: await aclient.client.chat.getPermalink({
-                channel: event.user.id,
+                channel: msg.channel,
                 message_ts: msg.ts,
             }).then(d=>d.permalink)
         }
