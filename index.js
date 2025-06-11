@@ -203,6 +203,8 @@ app.post('/content',(req,res) => {
     const auth = req.headers["authorization"]
     if(auth !== env.SLACK_XOXB) return res.status(401).json({ fed: true })
         // const { to, from, content, airtableId } = req.body;
+    console.log(`[REQ] queing time!`)
+    sendQueueMessage()
 res.json({ success:true, message: "queing msgs"})
     })
 // app.listen(process.env.PORT ||8001, () => {
