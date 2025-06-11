@@ -156,7 +156,7 @@ modifying.push(item)
 async function sendQueueMessage() {
 // pull all queue messages from airtable lol
 const updateRecords = []
-const currentRecords = await fetch(`https://api.airtable.com/v0/${env.BASE_ID}/messages_to_users?filterByFormula=${encodeURIComponent("`AND({Automation - sent to user} = FALSE(), {Click here to send to user} = TRUE())`")}`, {
+const currentRecords = await fetch(`https://api.airtable.com/v0/${env.BASE_ID}/messages_to_users?filterByFormula=${encodeURIComponent("AND({Automation - sent to user} = FALSE(), {Click here to send to user} = TRUE())")}`, {
     headers: {
         Authorization: `Bearer ${env.AIRTABLE_KEY}`
     }
@@ -186,7 +186,9 @@ for(const record of currentRecords) {
         console.error("Failed to send message", e)
     }
 }
-await fetch("https://api.airtable.com/v0/"+env.BASE_ID+"/messages_to_users", {
+if(updateRecords.length > 0) {
+    console.log(`Updating records`)
+    await fetch("https://api.airtable.com/v0/"+env.BASE_ID+"/messages_to_users", {
     method: "PATCH",
     headers: {
         Authorization: `Bearer ${env.AIRTABLE_KEY}`,
@@ -194,6 +196,7 @@ await fetch("https://api.airtable.com/v0/"+env.BASE_ID+"/messages_to_users", {
     },
     body: JSON.stringify({ records: updateRecords })
 }).then(r=>r.json()).then(d=> console.log("Updated records", d))
+}
 }
 app.get('/healthcheck',(req,res) => {res.sendStatus(200)})
 app.post('/content',(req,res) => {
