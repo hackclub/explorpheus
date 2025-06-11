@@ -156,13 +156,10 @@ modifying.push(item)
 async function sendQueueMessage() {
 // pull all queue messages from airtable lol
 const updateRecords = []
-const currentRecords = await fetch("https://api.airtable.com/v0/"+env.BASE_ID+"/messages_to_users", {
+const currentRecords = await fetch(`https://api.airtable.com/v0/${env.BASE_ID}/messages_to_users?filterByFormula=${encodeURIComponent("`AND({Automation - sent to user} = FALSE(), {Click here to send to user} = TRUE())`")}`, {
     headers: {
         Authorization: `Bearer ${env.AIRTABLE_KEY}`
-    },
-    body: JSON.stringify({
-        filterByFormula: `AND({Automation - sent to user} = FALSE(), {Click here to send to user} = TRUE())`
-    }),
+    }
 }).then(r=>r.json()).then(d=> d.records)
 console.log(`Sending ${currentRecords.length} messages`)
 for(const record of currentRecords) {
