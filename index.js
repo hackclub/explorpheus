@@ -15,7 +15,9 @@ let env = z.object({
     BASE_ID: z.string(),
     API_KEY: z.string(),
     APP_TOKEN: z.string().optional(),
-    SLACK_SIGNING_SECRET: z.string()
+    SLACK_SIGNING_SECRET: z.string(),
+    LOOPS_ID: z.string(),
+    LOOPS_API_KEY: z.string(),
 }).safeParse(process.env)
 if(env.error) {
     throw env.error
@@ -217,6 +219,22 @@ aclient.event('team_join', async ({ event, context }) => {
         icon_url: 'https://hc-cdn.hel1.your-objectstorage.com/s/v3/d6d828d6ba656d09a62add59dc07e2974bfdb38f_image.png',
     })
 ])
+
+fetch('https://app.loops.so/api/v1/transactional', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer '+env.LOOPS_API_KEY,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    'email': info.email,
+    'transactionalId': env.LOOPS_ID,
+    'addToAudience': true,
+    'dataVariables': {
+      'auth_link': MAGIC_LINK
+    }
+  })
+});
     // update airtable by creating a record
     await airtable.createBulk([{
         fields: {
