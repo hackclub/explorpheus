@@ -230,38 +230,27 @@ aclient.event('team_join', async ({ event, context }) => {
     const json = await checkOnServersBackend.json()
     let MAGIC_LINK = json.link || "https://saahild.com/";
     // dm them
-    const textContent = 'Welcome to Slack! Click the button below to continue to Tutorial Island…'
-    const blocksContent = [
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: textContent
-        }
-      },
-      {
-        type: "section",
-        text: {
-            type: "mrkdwn",
-            text: ":siren-real: ⬇️⬇️⬇️ :siren-real:"
-        }
-      },
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: 'Click Here',
-              emoji: true
-            },
-            url: MAGIC_LINK,
-            action_id: 'magic_link_button'
-          }
-        ]
-    }
-]
+    const textContent = "click over there to get to the tutorial! →"
+    const blocksContent =  [
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "click over there to get to the tutorial! →"
+			},
+			"accessory": {
+				"type": "button",
+				"text": {
+					"type": "plain_text",
+					"text": ":hii: click me! :siren-real:",
+					"emoji": true
+				},
+				"value": "meow",
+				"url": MAGIC_LINK,
+				"action_id": "button-action"
+			}
+		}
+	]
    const msgs = await Promise.all([client.chat.postMessage({
         channel: event.user.id, 
        blocks: blocksContent
