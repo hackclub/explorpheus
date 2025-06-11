@@ -27,6 +27,8 @@ const receiver = new App.default.ExpressReceiver({
   signingSecret: env.SLACK_SIGNING_SECRET,
   endpoints: '/slack/events', // This is the default endpoint for Slack events
 });
+let airtable_under_press = false;
+let join_requests_currently = 0;
 const aclient = new App.default.App({
   token: env.SLACK_XOXB,
 //   socketMode: true,
@@ -213,6 +215,11 @@ res.json({ success:true, message: "queing msgs"})
 // })
 // on team join -> hit bens endpoint -> ??
 aclient.event('team_join', async ({ event, context }) => {
+    join_requests_currently++
+    if(join_requests_currently > 4) await new Promise(r=>setTimeout(r,1000))
+if(join_requests_currently > 10) {
+    airtable_under_press = true;
+}
     // console.log(event)
     // check if user is for this - if so dm them.
     console.log(event.user.id)
@@ -292,10 +299,46 @@ fetch('https://app.loops.so/api/v1/transactional', {
         }
     }])
 })
+aclient.action('button-action', async ({ body, ack, say }) => {
+    await ack();
+    console.log(body)
+    // send message to user
+    const user = body.user.id;
+    // const MAGIC_LINK = body.message.blocks[0].accessory.url;
+    // await client.chat.postMessage({
+    //     channel: user,
+    //     text: `Thanks for clicking the button! Here's your magic link: ${MAGIC_LINK}`,
+    //     blocks: [
+    //         {
+    //             type: "section",
+    //             text: {
+    //                 type: "mrkdwn",
+    //                 text: `Here's your magic link: <${MAGIC_LINK}|Click here>`
+    //             }
+    //         }
+    //     ]
+    // });
+    if(!airtable_under_press) {
+   try {
+     // update airtable to say button was clicked 
+    await airtable.updateBulk([{
+        id: user, // assuming ts is the record id
+        fields: {
+            "Automation - User clicked magic link via slack": true,
+        }
+    }])
+   } catch (e) {
+    console.error('oops ', e)
+   } 
+    }
+});
 aclient.start(process.env.PORT).then(() => {
     console.log(`uppies`)
 })
-
+// reset major count every 60s
+setInterval(() => {
+    join_requests_currently = 0;
+})
 // aclient.r 
 // magic-url
 sendQueueMessage()
