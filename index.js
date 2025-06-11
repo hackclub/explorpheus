@@ -164,7 +164,7 @@ const currentRecords = await fetch(`https://api.airtable.com/v0/${env.BASE_ID}/m
 console.log(`Sending ${currentRecords.length} messages`)
 for(const record of currentRecords) {
     const fields = record.fields;
-    if(!fields.to || !fields.from || !fields.content) {
+    if(!fields.to || !fields["Sent by"] || !fields.content) {
         console.error("Invalid record", record)
         continue;
     }
@@ -172,7 +172,7 @@ for(const record of currentRecords) {
     try {
         await client.chat.postMessage({
             channel: fields.to,
-            text: fields.content + "\n> From "+ fields.from,
+            text: fields.content + "\n> From "+ fields["Sent by"].name,
             // username: fields.from,
             // icon_url: 'https://hc-cdn.hel1.your-objectstorage.com/s/v3/d6d828d6ba656d09a62add59dc07e2974bfdb38f_image.png',
         });
