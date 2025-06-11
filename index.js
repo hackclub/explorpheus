@@ -179,7 +179,7 @@ for(const record of currentRecords) {
         updateRecords.push({
             id: record.id,
             fields: {
-                "Automation - sent to user": true,
+                "Automation_-_sent_to_user": true,
                 "Status": "Sent"
             }
         })
