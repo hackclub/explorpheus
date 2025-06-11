@@ -153,7 +153,58 @@ modifying.push(item)
     }
 }
 // doTheQueueLoop()
+async function sendQueueMessage() {
+// pull all queue messages from airtable lol
+const updateRecords = []
+const currentRecords = await fetch("https://api.airtable.com/v0/"+env.BASE_ID+"/messages_to_users", {
+    headers: {
+        Authorization: `Bearer ${env.AIRTABLE_KEY}`
+    },
+    body: JSON.stringify({
+        filterByFormula: `AND({Automation - sent to user} = FALSE(), {Click here to send to user} = TRUE())`
+    }),
+}).then(r=>r.json()).then(d=> d.records)
+console.log(`Sending ${currentRecords.length} messages`)
+for(const record of currentRecords) {
+    const fields = record.fields;
+    if(!fields.to || !fields.from || !fields.content) {
+        console.error("Invalid record", record)
+        continue;
+    }
+    // send message to user
+    try {
+        await client.chat.postMessage({
+            channel: fields.to,
+            text: fields.content + "\n> From "+ fields.from,
+            // username: fields.from,
+            // icon_url: 'https://hc-cdn.hel1.your-objectstorage.com/s/v3/d6d828d6ba656d09a62add59dc07e2974bfdb38f_image.png',
+        });
+        updateRecords.push({
+            id: record.id,
+            fields: {
+                "Automation - sent to user": true
+            }
+        })
+    } catch (e) {
+        console.error("Failed to send message", e)
+    }
+}
+await fetch("https://api.airtable.com/v0/"+env.BASE_ID+"/messages_to_users", {
+    method: "PATCH",
+    headers: {
+        Authorization: `Bearer ${env.AIRTABLE_KEY}`,
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ records: updateRecords })
+}).then(r=>r.json()).then(d=> console.log("Updated records", d))
+}
 app.get('/healthcheck',(req,res) => {res.sendStatus(200)})
+app.post('/content',(req,res) => {
+    const auth = req.headers["authorization"]
+    if(auth !== env.SLACK_XOXB) return res.status(401).json({ fed: true })
+        // const { to, from, content, airtableId } = req.body;
+res.json({ success:true, message: "queing msgs"})
+    })
 // app.listen(process.env.PORT ||8001, () => {
 //     console.log(`up`)
 // })
@@ -255,3 +306,4 @@ aclient.start(process.env.PORT).then(() => {
 
 // aclient.r 
 // magic-url
+sendQueueMessage()
