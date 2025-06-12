@@ -93,8 +93,9 @@ export class AirtableFetch {
             return {error: e, ok: false}
         }
     }
-      async createBulk(records, userAgent = 'Explorpheus/1.0.0') {
-        const res = await fetch(this.url, {
+      async createBulk(records, userAgent = 'Explorpheus/1.0.0', baseID = this.baseID, tableName = this.tableName) {
+        let url  = this.urlBase + baseID + '/' + tableName
+        const res = await fetch(url, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${this.apiKey}`,

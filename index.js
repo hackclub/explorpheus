@@ -18,6 +18,7 @@ let env = z.object({
     SLACK_SIGNING_SECRET: z.string(),
     LOOPS_ID: z.string(),
     LOOPS_API_KEY: z.string(),
+    JR_BASE_ID: z.string()
 }).safeParse(process.env)
 if(env.error) {
     throw env.error
@@ -299,7 +300,7 @@ fetch('https://app.loops.so/api/v1/transactional', {
             "User Agent": "Neon-Needs-To-Fix_this/0.0.1",
             "Form Submission IP": "0.0.0.0"
         }
-    }]).then(d=>console.log(d)).catch(e=>console.error(e))
+    }], "Explorpheus/1.0.0 create user", env.JR_BASE_ID, "SoM 25 Joins").then(d=>console.log(d)).catch(e=>console.error(e))
 })
 aclient.action('button-action', async ({ body, ack, say }) => {
     await ack();
