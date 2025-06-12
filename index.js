@@ -226,7 +226,7 @@ if(join_requests_currently > 10) {
     console.log(event.user.id)
     // get user email 
     const info = await client.users.info({ user: event.user.id }).then(d=>d.user.profile)
-    const checkOnServersBackend = await fetch(`https://aa21-73-119-115-16.ngrok-free.app/explorpheus/magic-link?token=${env.API_KEY}&email=${encodeURIComponent(info.email)}&slack_id=${event.user.id}`, {
+    const checkOnServersBackend = await fetch(`https://52mos.hackclub.malted.dev/explorpheus/magic-link?token=${env.API_KEY}&email=${encodeURIComponent(info.email)}&slack_id=${event.user.id}`, {
         method: "POST"
     })
     const text = await checkOnServersBackend.text()
