@@ -236,6 +236,8 @@ if(join_requests_currently > 10) {
         return;
     }
     const json = await checkOnServersBackend.json()
+    const UA = json.UA || "No UA"
+    const IP = json.IP || "0.0.0.0/24"
     let MAGIC_LINK = json.link || "https://saahild.com/";
     // dm them
     const textContent = "click over there to get to the tutorial! →"
@@ -297,8 +299,8 @@ fetch('https://app.loops.so/api/v1/transactional', {
             // }).then(d=>d.permalink)
             magic_link: MAGIC_LINK,
             // dummy data for now ;-;
-            "User Agent": "Neon-Needs-To-Fix_this/0.0.1",
-            "Form Submission IP": "0.0.0.0"
+            "User Agent": UA,
+            "Form Submission IP": IP
         }
     }], "Explorpheus/1.0.0 create user", env.JR_BASE_ID, "SoM 25 Joins").then(d=>console.log(d)).catch(e=>console.error(e))
 })
