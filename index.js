@@ -229,8 +229,8 @@ if(join_requests_currently > 10) {
     const checkOnServersBackend = await fetch(`https://aa21-73-119-115-16.ngrok-free.app/explorpheus/magic-link?token=${env.API_KEY}&email=${encodeURIComponent(info.email)}&slack_id=${event.user.id}`, {
         method: "POST"
     })
-    const json = await checkOnServersBackend.json()
-    console.debug(json)
+    const text = await checkOnServersBackend.text()
+    console.debug(text)
 
     if(checkOnServersBackend.status !== 200) {
         // not my problem 
@@ -238,6 +238,7 @@ if(join_requests_currently > 10) {
         console.log("bad - ", checkOnServersBackend.status, info.email, event.user.id)
         return;
     }
+    const json = await JSON.parse(text)
     const UA = json.user_agent || "No UA"
     const IP = json.ip || "0.0.0.0/24"
     let MAGIC_LINK = json.link || "https://saahild.com/";
