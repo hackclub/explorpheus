@@ -288,14 +288,16 @@ fetch('https://app.loops.so/api/v1/transactional', {
     // update airtable by creating a record
     await airtable.createBulk([{
         fields: {
-            email: info.email,
-            status: "Invitation Sent",
-            identifier: event.user.id,
+            Email: info.email,
+            "Slack ID": event.user.id,
             // message_link_sent_to_user: await aclient.client.chat.getPermalink({
             //     channel: msg.channel,
             //     message_ts: msg.ts,
             // }).then(d=>d.permalink)
-            magic_link: MAGIC_LINK
+            magic_link: MAGIC_LINK,
+            // dummy data for now ;-;
+            "User Agent": "Neon-Needs-To-Fix_this/0.0.1",
+            "Form Submission IP": "0.0.0.0"
         }
     }])
 })
