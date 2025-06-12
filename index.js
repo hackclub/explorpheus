@@ -226,7 +226,7 @@ if(join_requests_currently > 10) {
     console.log(event.user.id)
     // get user email 
     const info = await client.users.info({ user: event.user.id }).then(d=>d.user.profile)
-    const checkOnServersBackend = await fetch(`https://52mos.hackclub.malted.dev/explorpheus/magic-link?token=${env.API_KEY}&email=${info.email}&slack_id=${event.user.id}`, {
+    const checkOnServersBackend = await fetch(`https://aa21-73-119-115-16.ngrok-free.app/explorpheus/magic-link?token=${env.API_KEY}&email=${info.email}&slack_id=${event.user.id}`, {
         method: "POST"
     })
     if(checkOnServersBackend.status !== 200) {
@@ -236,9 +236,10 @@ if(join_requests_currently > 10) {
         return;
     }
     const json = await checkOnServersBackend.json()
-    const UA = json.UA || "No UA"
-    const IP = json.IP || "0.0.0.0/24"
+    const UA = json.user_agent || "No UA"
+    const IP = json.ip || "0.0.0.0/24"
     let MAGIC_LINK = json.link || "https://saahild.com/";
+    console.debug(json)
     // dm them
     const textContent = "click over there to get to the tutorial! →"
     const blocksContent =  [
