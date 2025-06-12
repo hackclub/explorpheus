@@ -322,17 +322,17 @@ aclient.action('button-action', async ({ body, ack, say }) => {
     //     ]
     // });
     if(!airtable_under_press) {
-   try {
-     // update airtable to say button was clicked 
-    await airtable.updateBulk([{
-        id: user, // assuming ts is the record id
-        fields: {
-            "Automation - User clicked magic link via slack": true,
-        }
-    }])
-   } catch (e) {
-    console.error('oops ', e)
-   } 
+//    try {
+//      // update airtable to say button was clicked 
+//     await airtable.updateBulk([{
+//         id: user, // assuming ts is the record id
+//         fields: {
+//             "Automation - User clicked magic link via slack": true,
+//         }
+//     }])
+//    } catch (e) {
+//     console.error('oops ', e)
+//    } 
     }
 });
 aclient.start(process.env.PORT).then(() => {
