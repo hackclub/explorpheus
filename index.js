@@ -348,8 +348,37 @@ aclient.action('button-action', async ({ body, ack, say }) => {
     }
 });
 aclient.event("app_home_opened", async ({ event, context }) => {
+    const allowed_user_ids = [
+  'U0C7B14Q3',   'UDK5M9Y13',
+  'U01MPHKFZ7S', 'U03DFNYGPCN',
+  'U054VC2KM9P', 'U059VC0UDEU',
+  'U05F4B48GBF', 'U05JNJZJ0BS',
+  'U06QK6AG3RD', 'U079VBNLTPD',
+  'U07ACECRYM6', 'U07AZFQLPQ8',
+  'U07E7MG2ST0', 'U07L45W79E1',
+  'U07Q4K6RHM5', 'U07SX29CECA',
+  'U080A3QP42C', 'U0810GB0HE3',
+  'U082DPCGPST', 'U08B2HD1JNA'
+]
     // TODO: add, view actvly added users, option to re sent magic url, option to upgrade user
+if(allowed_user_ids.includes(event.user)) {
 aclient.client.views.publish({
+    user_id: event.user, // the user ID of the user whose home tab is being opened
+    view: {
+        type: 'home',
+        blocks: [
+           {
+            type: "section",
+            text: {
+                type: "mrkdwn",
+                text: "meow soon"
+            }
+           }
+        ]
+    }
+})
+} else {
+    aclient.client.views.publish({
     user_id: event.user, // the user ID of the user whose home tab is being opened
     view: {
         type: 'home',
@@ -364,6 +393,7 @@ aclient.client.views.publish({
         ]
     }
 })
+}
 })
 
 aclient.start(process.env.PORT).then(() => {
