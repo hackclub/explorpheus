@@ -243,25 +243,30 @@ if(join_requests_currently > 10) {
     const IP = json.ip || "0.0.0.0/24"
     let MAGIC_LINK = json.link || "https://saahild.com/";
     // dm them
-    const textContent = "click over there to get to the tutorial! →"
+    const textContent = "click below to get to the tutorial!"
     const blocksContent =  [
 		{
-			"type": "section",
+			"type": "header",
 			"text": {
-				"type": "mrkdwn",
-				"text": "click over there to get to the tutorial! →"
-			},
-			"accessory": {
-				"type": "button",
-				"text": {
-					"type": "plain_text",
-					"text": ":hii: click me! :siren-real:",
-					"emoji": true
-				},
-				"value": "meow",
-				"url": MAGIC_LINK,
-				"action_id": "button-action"
+				"type": "plain_text",
+				"text": "click below to get to the tutorial!"
 			}
+		},
+		{
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": ":hii: click me! :siren-real:",
+						"emoji": true
+					},
+					"value": "meow",
+					"url": MAGIC_LINK,
+					"action_id": "button-action"
+				}
+			]
 		}
 	]
    const msgs = await Promise.all([client.chat.postMessage({
