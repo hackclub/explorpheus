@@ -347,7 +347,7 @@ aclient.action('button-action', async ({ body, ack, say }) => {
 //    } 
     }
 });
-aclient.event("app_home", async ({ event, context }) => {
+aclient.event("app_home_opened", async ({ event, context }) => {
     // TODO: add, view actvly added users, option to re sent magic url, option to upgrade user
 aclient.client.views.publish({
     user_id: event.user, // the user ID of the user whose home tab is being opened
