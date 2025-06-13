@@ -7,7 +7,7 @@ import { inviteGuestToSlackToriel} from "./undocumented.js"
 import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
 import crypto from "crypto"
-let env = z.object({ 
+let env0 = z.object({ 
     SLACK_XOXB: z.string(),
     SLACK_XOXC: z.string(),
     SLACK_XOXD: z.string(),
@@ -18,12 +18,13 @@ let env = z.object({
     SLACK_SIGNING_SECRET: z.string(),
     LOOPS_ID: z.string(),
     LOOPS_API_KEY: z.string(),
-    JR_BASE_ID: z.string()
+    JR_BASE_ID: z.string(),
+    SLACK_XOXP: z.string()
 }).safeParse(process.env)
-if(env.error) {
-    throw env.error
+if(env0.error) {
+    throw env0.error
 }
-env = env.data
+const env = env0.data
 const receiver = new App.default.ExpressReceiver({
   signingSecret: env.SLACK_SIGNING_SECRET,
   endpoints: '/slack/events', // This is the default endpoint for Slack events
@@ -271,7 +272,8 @@ if(join_requests_currently > 10) {
 	]
    const msgs = await Promise.all([client.chat.postMessage({
         channel: event.user.id, 
-       blocks: blocksContent
+       blocks: blocksContent,
+       token: env.SLACK_XOXP
     }), client.chat.postMessage({
         channel: event.user.id,
         text: textContent,
