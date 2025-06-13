@@ -347,6 +347,25 @@ aclient.action('button-action', async ({ body, ack, say }) => {
 //    } 
     }
 });
+aclient.event("app_home", async ({ event, context }) => {
+    // TODO: add, view actvly added users, option to re sent magic url, option to upgrade user
+aclient.client.views.publish({
+    user_id: event.user, // the user ID of the user whose home tab is being opened
+    view: {
+        type: 'home',
+        blocks: [
+           {
+            type: "section",
+            text: {
+                type: "mrkdwn",
+                text: "hi"
+            }
+           }
+        ]
+    }
+})
+})
+
 aclient.start(process.env.PORT).then(() => {
     console.log(`uppies`)
 })
