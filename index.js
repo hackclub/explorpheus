@@ -242,14 +242,15 @@ res.json({ success:true, message: "queing msgs"})
   // Add the cookie to the headers
   headers.append('Cookie', cookieValue)
   headers.append('Content-Type', 'application/json')
-  headers.append('Authorization', `Bearer ${env.SLACK_XOXC}`)
+  // headers.append('Authorization', `Bearer ${env.SLACK_XOXC}`)
 
   const form = JSON.stringify({
     user,
-    team_id,
+   token: env.SLACK_XOXC
+//    team_id,
   })
   const r = await fetch(
-    `https://slack.com/api/users.admin.setRegular?slack_route=${team_id}&user=${user}`,
+    `https://slack.com/api/users.admin.setRegular?slack_route=${team_id}`,
     {
       headers,
       method: 'POST',
