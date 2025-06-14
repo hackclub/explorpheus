@@ -251,7 +251,7 @@ res.json({ success:true, message: "queing msgs"})
   })
 console.log(form)
   const r = await fetch(
-    `https://slack.com/api/users.admin.setRegular?slack_route=${team_id}`,
+    `https://slack.com/api/users.admin.setRegular?slack_route=${team_id}&user=${req.body.slack_id}`,
     {
       headers,
       method: 'POST',
