@@ -212,6 +212,14 @@ app.post('/content',(req,res) => {
     sendQueueMessage()
 res.json({ success:true, message: "queing msgs"})
     })
+
+    app.post('/verified', (req,res) => {
+        console.log(req.body)
+        if(req.body.token !== env.SLACK_XOXB) {
+            return res.status(401).end()
+        }
+        return res.status(200).end()
+    })
 // app.listen(process.env.PORT ||8001, () => {
 //     console.log(`up`)
 // })
@@ -333,19 +341,9 @@ aclient.action('button-action', async ({ body, ack, say }) => {
     //         }
     //     ]
     // });
-    if(!airtable_under_press) {
-//    try {
-//      // update airtable to say button was clicked 
-//     await airtable.updateBulk([{
-//         id: user, // assuming ts is the record id
-//         fields: {
-//             "Automation - User clicked magic link via slack": true,
-//         }
-//     }])
-//    } catch (e) {
-//     console.error('oops ', e)
-//    } 
-    }
+    // if(!airtable_under_press) {
+
+    // }
 });
 aclient.event("app_home_opened", async ({ event, context }) => {
     const allowed_user_ids = [
