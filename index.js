@@ -3,7 +3,7 @@ import express from "express"
 // import { WebClient } from "@slack/web-api"
 const  App  = await import('@slack/bolt');
 // console.log([App.default])
-import { inviteGuestToSlackToriel} from "./undocumented.js"
+import { handleMCGInvite, inviteGuestToSlackToriel} from "./undocumented.js"
 import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
 import crypto from "crypto"
@@ -20,7 +20,8 @@ let env0 = z.object({
     LOOPS_ID: z.string(),
     LOOPS_API_KEY: z.string(),
     JR_BASE_ID: z.string(),
-    SLACK_XOXP: z.string()
+    SLACK_XOXP: z.string(),
+    UPTIME_URL_THING: z.string()
 }).safeParse(process.env)
 if(env0.error) {
     throw env0.error
@@ -34,8 +35,6 @@ let airtable_under_press = false;
 let join_requests_currently = 0;
 const aclient = new App.default.App({
   token: env.SLACK_XOXB,
-//   socketMode: true,
-//   appToken: env.APP_TOKEN,
   receiver
 });
 const client = aclient.client
@@ -45,118 +44,10 @@ const airtable = new AirtableFetch({
     tableName: "explorpheus"
 })
 const app = receiver.app;
-const liveQueue = []
-const THE_CHANNEL_LIST = "C08MYN7HVN2,C08N1NWKEF4,C016DEDUL87,C75M7C0SY" // #journey,#journey-feed,#cdn,#welcome
 app.use(express.json())
 app.get('/', (req,res) => res.send('hi:3'))
 
-app.post('/new_user', (req,res) => {
-    // 1. validate auth
-    if(req.headers.authorization !== `Bearer ${env.API_KEY}`) {
-        return res.status(403).send('Forbidden')
-    }
-    if(!req.body?.email) {
-        return res.status(400).send("No email or body found")
-    }
-    // 2. add to queue 
-    liveQueue.push({
-        email: req.body.email,
-    })
-    // 3. respond with OK
-    res.send(
-        "OK"
-    )
-})
 
-function NoDiff(obj1, obj2) {
-    if(typeof obj1.email !== 'string' || typeof obj2.email !== 'string') {
-        return true; // dont care atp
-    }
-    if(typeof obj1.status !== 'string' || typeof obj2.status !== 'string') {
-        return true;
-    }
-    if(obj1.email !== obj2.email) return false;
-    if(obj1.status !== obj2.status) return false;
-    return true;
-}
-async function syncToAirtable() {
-const currentRecords = await airtable.read().then(d=>d)
-const mashed = []
-const mashed2 = []
-for(const item of liveQueue) {
-    const foundItem = currentRecords.find(r => r.fields.email === item.email)
-    if(foundItem && NoDiff(item, foundItem.fields)) {
-        // already exists and isnt changed, skip
-        continue
-    }
-    if(foundItem) {
-        console.log('foundItem', foundItem, item)
-        // const formulatedObject= 
-mashed2.push({
-    id: foundItem.id,
-    fields: {
-        email: item.email,
-        status: item.status,
-        failed_attempts: item.failed_attempts || 0,
-    }
-})
-    } else {
-    mashed.push({
-        fields: {
-            email: item.email,
-            status: item.status || "Pending",
-            identifier: item.identifier || crypto.randomUUID()
-        }
-    })
-    }
-}
-// update records mass
-if(mashed.length > 0) {
-airtable.createBulk(mashed).then(console.log).catch(console.error)
-}
-if(mashed2.length >0) {
-    airtable.updateBulk(mashed2).catch(console.error).then(console.log)
-}
-}
-async function doTheQueueLoop() {
-if(liveQueue.length > 0) {
-        await doTheQueue()
-    await new Promise(r=>setTimeout(r, 500))
-    await syncToAirtable()
-}
-    await new Promise(r=>setTimeout(r, 1000 * 60)) // wait 1 minutes
-     doTheQueueLoop()
-}
-async function doTheQueue() {
-    if(liveQueue.length === 0) return;
-    let modifying = []
-    for(const item of liveQueue) {
-        if(item.status == "Invitation Sent") continue;
-        inviteGuestToSlackToriel({
-            email: item.email,
-            channels: THE_CHANNEL_LIST,
-            env 
-        }).then(async (_d)  => {
-console.log(_d, "A OK")
-item.status = "Invitation Sent"
-modifying.push(item)
-// lets rotate to sending them with how to blah blah
-// get user by email
-const user = await client.users.lookupByEmail({ email: item.email  })
-console.log(user)
-await client.chat.postMessage({
-    channel: user.user.id,
-    text: FAT_MESSAGE
-})
-        }).catch((err ) => {
-console.error(err, "NOOOO")
-item.status = "Failed, pending retry"
-if(typeof item.failed_attempts !== "number") item.failed_attempts = 0;
-item.failed_attempts += 1
-modifying.push(item)
-        })
-    }
-}
 // doTheQueueLoop()
 async function sendQueueMessage() {
 // pull all queue messages from airtable lol
@@ -219,54 +110,16 @@ res.json({ success:true, message: "queing msgs"})
         if(req.body.token !== env.API_KEY) {
             return res.status(401).end()
         }
-//        if(alreadyCheckedEmails.includes(req.body.slack_id)) return res.status(400).end()
+       if(alreadyCheckedEmails.includes(req.body.slack_id)) return res.status(400).end()
             const user = req.body.slack_id
         // check if user is upgraded already
-          const userProfile = await client.users.info({ user: req.body.slack_id })
-  const { team_id } = userProfile.user
-
-  if (
-    !userProfile.user.is_restricted &&
-    !userProfile.user.is_ultra_restricted
-  ) {
-    console.log(`User ${user} is already a full user– skipping`)
-    alreadyCheckedEmails.push(req.body.slack_id)
-    return res.status(403).end()
-  }
-
-  const cookieValue = `d=${env.SLACK_XOXD}`
-
-  // Create a new Headers object
-  const headers = new Headers()
-
-  // Add the cookie to the headers
-  headers.append('Cookie', cookieValue)
-  headers.append('Content-Type', 'application/json')
-  headers.append('Authorization', `Bearer ${env.SLACK_XOXC}`)
-
-  const form = JSON.stringify({
-    user:req.body.slack_id,
-   token: env.SLACK_XOXC
-//    team_id,
-  })
-console.log(form)
-  const r = await fetch(
-    `https://slack.com/api/users.admin.setRegular?slack_route=${team_id}&user=${req.body.slack_id}`,
-    {
-      headers,
-      method: 'POST',
-      body: form,
-    }
-  )
-  const j = await r.json()
-  console.log('Got promotion response:')
-  console.log(JSON.stringify(j, null, 2))
-  alreadyCheckedEmails.push(req.body.slack_id)
+   const proc = await handleMCGInvite(client, env, user, alreadyCheckedEmails)
+   if(!proc) {
+        return res.status(403).end()
+   }
         return res.status(200).end()
     })
-// app.listen(process.env.PORT ||8001, () => {
-//     console.log(`up`)
-// })
+
 // on team join -> hit bens endpoint -> ??
 aclient.event('team_join', async ({ event, context }) => {
     join_requests_currently++
@@ -274,7 +127,6 @@ aclient.event('team_join', async ({ event, context }) => {
 if(join_requests_currently > 10) {
     airtable_under_press = true;
 }
-    // console.log(event)
     // check if user is for this - if so dm them.
     console.log(event.user.id)
     // get user email 
@@ -367,28 +219,10 @@ fetch('https://app.loops.so/api/v1/transactional', {
         }
     }], "Explorpheus/1.0.0 create user", env.JR_BASE_ID, "SoM 25 Joins").then(d=>console.log(d)).catch(e=>console.error(e))
 })
+
+
 aclient.action('button-action', async ({ body, ack, say }) => {
     await ack();
-    console.log(body)
-    // send message to user
-    const user = body.user.id;
-    // const MAGIC_LINK = body.message.blocks[0].accessory.url;
-    // await client.chat.postMessage({
-    //     channel: user,
-    //     text: `Thanks for clicking the button! Here's your magic link: ${MAGIC_LINK}`,
-    //     blocks: [
-    //         {
-    //             type: "section",
-    //             text: {
-    //                 type: "mrkdwn",
-    //                 text: `Here's your magic link: <${MAGIC_LINK}|Click here>`
-    //             }
-    //         }
-    //     ]
-    // });
-    // if(!airtable_under_press) {
-
-    // }
 });
 aclient.event("app_home_opened", async ({ event, context }) => {
     const allowed_user_ids = [
@@ -445,7 +279,7 @@ aclient.start(process.env.PORT).then(() => {
 // reset major count every 60s
 setInterval(() => {
     join_requests_currently = 0;
-})
+}, 60 * 1000)
 // aclient.r 
 // magic-url
 sendQueueMessage()
