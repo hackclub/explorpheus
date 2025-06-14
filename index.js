@@ -220,6 +220,7 @@ res.json({ success:true, message: "queing msgs"})
             return res.status(401).end()
         }
         if(alreadyCheckedEmails.includes(req.body.slack_id)) return res.status(400).end()
+            const user = req.body.slack_id
         // check if user is upgraded already
           const userProfile = await client.users.info({ user: req.body.slack_id })
   const { team_id } = userProfile.user
