@@ -7,6 +7,7 @@ import { inviteGuestToSlackToriel} from "./undocumented.js"
 import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
 import crypto from "crypto"
+const alreadyCheckedEmails = []
 let env0 = z.object({ 
     SLACK_XOXB: z.string(),
     SLACK_XOXC: z.string(),
@@ -213,11 +214,51 @@ app.post('/content',(req,res) => {
 res.json({ success:true, message: "queing msgs"})
     })
 
-    app.post('/verified', (req,res) => {
+    app.post('/verified', async (req,res) => {
         console.log(req.body)
-        if(req.body.token !== env.SLACK_XOXB) {
+        if(req.body.token !== env.API_KEY) {
             return res.status(401).end()
         }
+        if(alreadyCheckedEmails.includes(req.body.slack_id)) return res.status(400).end()
+        // check if user is upgraded already
+          const userProfile = await client.users.info({ user: req.body.slack_id })
+  const { team_id } = userProfile.user
+
+  if (
+    !userProfile.user.is_restricted &&
+    !userProfile.user.is_ultra_restricted
+  ) {
+    console.log(`User ${user} is already a full user– skipping`)
+    alreadyCheckedEmails.push(req.body.slack_id)
+    return res.status(403).end()
+  }
+
+  const cookieValue = `d=${env.SLACK_XOXD}`
+
+  // Create a new Headers object
+  const headers = new Headers()
+
+  // Add the cookie to the headers
+  headers.append('Cookie', cookieValue)
+  headers.append('Content-Type', 'application/json')
+  headers.append('Authorization', `Bearer ${env.SLACK_XOXC}`)
+
+  const form = JSON.stringify({
+    user,
+    team_id,
+  })
+  const r = await fetch(
+    `https://slack.com/api/users.admin.setRegular?slack_route=${team_id}&user=${user}`,
+    {
+      headers,
+      method: 'POST',
+      body: form,
+    }
+  )
+  const j = await r.json()
+  console.log('Got promotion response:')
+  console.log(JSON.stringify(j, null, 2))
+  alreadyCheckedEmails.push(req.body.slack_id)
         return res.status(200).end()
     })
 // app.listen(process.env.PORT ||8001, () => {
