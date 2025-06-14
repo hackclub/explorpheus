@@ -219,7 +219,7 @@ res.json({ success:true, message: "queing msgs"})
         if(req.body.token !== env.API_KEY) {
             return res.status(401).end()
         }
-        if(alreadyCheckedEmails.includes(req.body.slack_id)) return res.status(400).end()
+     //   if(alreadyCheckedEmails.includes(req.body.slack_id)) return res.status(400).end()
             const user = req.body.slack_id
         // check if user is upgraded already
           const userProfile = await client.users.info({ user: req.body.slack_id })
@@ -242,7 +242,7 @@ res.json({ success:true, message: "queing msgs"})
   // Add the cookie to the headers
   headers.append('Cookie', cookieValue)
   headers.append('Content-Type', 'application/json')
-  // headers.append('Authorization', `Bearer ${env.SLACK_XOXC}`)
+  headers.append('Authorization', `Bearer ${env.SLACK_XOXC}`)
 
   const form = JSON.stringify({
     user,
