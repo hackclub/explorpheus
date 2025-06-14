@@ -219,7 +219,7 @@ res.json({ success:true, message: "queing msgs"})
         if(req.body.token !== env.API_KEY) {
             return res.status(401).end()
         }
-     //   if(alreadyCheckedEmails.includes(req.body.slack_id)) return res.status(400).end()
+//        if(alreadyCheckedEmails.includes(req.body.slack_id)) return res.status(400).end()
             const user = req.body.slack_id
         // check if user is upgraded already
           const userProfile = await client.users.info({ user: req.body.slack_id })
@@ -245,10 +245,11 @@ res.json({ success:true, message: "queing msgs"})
   headers.append('Authorization', `Bearer ${env.SLACK_XOXC}`)
 
   const form = JSON.stringify({
-    user,
+    user:req.body.slack_id,
    token: env.SLACK_XOXC
 //    team_id,
   })
+console.log(form)
   const r = await fetch(
     `https://slack.com/api/users.admin.setRegular?slack_route=${team_id}`,
     {
