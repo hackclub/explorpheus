@@ -278,19 +278,7 @@ if(join_requests_currently > 10) {
 			]
 		}
 	]
-   const msgs = await Promise.all([client.chat.postMessage({
-        channel: event.user.id, 
-       blocks: blocksContent,
-       token: env.SLACK_XOXP
-    }), client.chat.postMessage({
-        channel: event.user.id,
-        text: textContent,
-        blocks: blocksContent,
-        username: 'Explorpheus',
-        icon_url: 'https://hc-cdn.hel1.your-objectstorage.com/s/v3/d6d828d6ba656d09a62add59dc07e2974bfdb38f_image.png',
-    })
-])
-
+    
 fetch('https://app.loops.so/api/v1/transactional', {
   method: 'POST',
   headers: {
@@ -305,7 +293,20 @@ fetch('https://app.loops.so/api/v1/transactional', {
       'auth_link': MAGIC_LINK
     }
   })
-});
+}).then(d=>d.text()).then(console.log).catch(console.error)
+   const msgs = await Promise.all([client.chat.postMessage({
+        channel: event.user.id, 
+       blocks: blocksContent,
+       token: env.SLACK_XOXP
+    }), client.chat.postMessage({
+        channel: event.user.id,
+        text: textContent,
+        blocks: blocksContent,
+        username: 'Explorpheus',
+        icon_url: 'https://hc-cdn.hel1.your-objectstorage.com/s/v3/d6d828d6ba656d09a62add59dc07e2974bfdb38f_image.png',
+    })
+])
+;
     // update airtable by creating a record
     await airtable.createBulk([{
         fields: {
