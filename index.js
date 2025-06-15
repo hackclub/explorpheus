@@ -21,7 +21,8 @@ let env0 = z.object({
     LOOPS_API_KEY: z.string(),
     JR_BASE_ID: z.string(),
     SLACK_XOXP: z.string(),
-    UPTIME_URL_THING: z.string()
+    UPTIME_URL_THING: z.string(),
+    DOMAIN_OF_HOST: z.string()
 }).safeParse(process.env)
 if(env0.error) {
     throw env0.error
@@ -70,8 +71,6 @@ for(const record of currentRecords) {
         await client.chat.postMessage({
             channel: fields.to,
             text: fields.content + "\n> From "+ fields["Sent by"].name,
-            // username: fields.from,
-            // icon_url: 'https://hc-cdn.hel1.your-objectstorage.com/s/v3/d6d828d6ba656d09a62add59dc07e2974bfdb38f_image.png',
         });
         updateRecords.push({
             id: record.id,
@@ -132,9 +131,9 @@ if(join_requests_currently > 10) {
     console.log(event.user.id)
     // get user email 
     const info = await client.users.info({ user: event.user.id }).then(d=>d.user.profile)
-    const checkOnServersBackend = await fetch(`https://52mos.hackclub.malted.dev/explorpheus/magic-link?token=${env.API_KEY}&email=${encodeURIComponent(info.email)}&slack_id=${event.user.id}`, {
+    const checkOnServersBackend = await fetch(`https://${env.DOMAIN_OF_HOST}/explorpheus/magic-link?token=${env.API_KEY}&email=${encodeURIComponent(info.email)}&slack_id=${event.user.id}`, {
         method: "POST"
-    })
+    }).catch(e=> ({text: () => "no", status: 500}))
     const text = await checkOnServersBackend.text()
     console.debug(text)
 
