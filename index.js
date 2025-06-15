@@ -27,6 +27,7 @@ if(env0.error) {
     throw env0.error
 }
 const env = env0.data
+const last_5_users = []
 const receiver = new App.default.ExpressReceiver({
   signingSecret: env.SLACK_SIGNING_SECRET,
   endpoints: '/slack/events', // This is the default endpoint for Slack events
@@ -141,8 +142,20 @@ if(join_requests_currently > 10) {
         // not my problem 
         // fun fact this had ran when status was 200 idk why plz kill me
         console.log("bad - ", checkOnServersBackend.status, info.email, event.user.id)
+        last_5_users.unshift({
+            id: event.user.id, 
+            date: Date.now(),
+            got_verified: false
+        })
+        last_5_users = last_5_users.slice(0,5)
         return;
     }
+      last_5_users.unshift({
+            id: event.user.id, 
+            date: Date.now(),
+            got_verified: true
+        })
+        last_5_users = last_5_users.slice(0,5)
     const json = await JSON.parse(text)
     const UA = json.user_agent || "No UA"
     const IP = json.ip || "0.0.0.0/24"
@@ -243,15 +256,59 @@ aclient.client.views.publish({
     user_id: event.user, // the user ID of the user whose home tab is being opened
     view: {
         type: 'home',
-        blocks: [
-           {
-            type: "section",
-            text: {
-                type: "mrkdwn",
-                text: "meow soon"
-            }
-           }
-        ]
+       "blocks": [
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "Hi there {user}, here you can promote people to normal users and also send magic links.. below the buttons is the last 5 users who joined.."
+			}
+		},
+		{
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": "Send user magic url",
+						"emoji": true
+					},
+					"value": "send_magic_url_modal"
+				},
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": "Upgrade user",
+						"emoji": true
+					},
+					"value": "upgrade_user"
+				},
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": "Check if user is on the platform ",
+						"emoji": true
+					},
+					"value": "check_user"
+				}
+			]
+		},
+		{
+			"type": "divider"
+		},
+        ...last_5_users.map((d) => {
+            return {
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": `<@${d.id}> - ${new Date(d.date).toString()} ${d.got_verified?":done:": ":x:"}`
+			}
+		}
+        })
+	]
     }
 })
 } else {
