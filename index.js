@@ -7,7 +7,7 @@ import { handleMCGInvite} from "./undocumented.js"
 import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
 import crypto from "crypto"
-const alreadyCheckedEmails = []
+let alreadyCheckedEmails = []
 let env0 = z.object({ 
     SLACK_XOXB: z.string(),
     SLACK_XOXC: z.string(),
