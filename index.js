@@ -3,7 +3,7 @@ import express from "express"
 // import { WebClient } from "@slack/web-api"
 const  App  = await import('@slack/bolt');
 // console.log([App.default])
-import { handleMCGInvite, inviteGuestToSlackToriel} from "./undocumented.js"
+import { handleMCGInvite} from "./undocumented.js"
 import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
 import crypto from "crypto"
