@@ -22,7 +22,7 @@ export async function handleMCGInvite(client,env,user,alreadyCheckedEmails) {
   headers.append('Authorization', `Bearer ${env.SLACK_XOXC}`)
 
   const form = JSON.stringify({
-    user:req.body.slack_id,
+    user: user,
    token: env.SLACK_XOXC
 //    team_id,
   })
