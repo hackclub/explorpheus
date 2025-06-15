@@ -28,7 +28,7 @@ if(env0.error) {
     throw env0.error
 }
 const env = env0.data
-const last_5_users = []
+let last_5_users = []
 const receiver = new App.default.ExpressReceiver({
   signingSecret: env.SLACK_SIGNING_SECRET,
   endpoints: '/slack/events', // This is the default endpoint for Slack events
@@ -260,7 +260,7 @@ aclient.client.views.publish({
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": "Hi there {user}, here you can promote people to normal users and also send magic links.. below the buttons is the last 5 users who joined.."
+				"text": `Hi there <@${event.user}>, here you can promote people to normal users and also send magic links.. below the buttons is the last 5 users who joined..`
 			}
 		},
 		{
@@ -320,7 +320,7 @@ aclient.client.views.publish({
             type: "section",
             text: {
                 type: "mrkdwn",
-                text: "hi"
+                text: "hi this isnt for u :>"
             }
            }
         ]
