@@ -1,6 +1,5 @@
-import { ca } from "zod/v4/locales"
 
-const CHANNELS_TO_INVITE=["C0266FRGV", "C0C78SG9L","C01D7AHKMPF","C08Q1H6D79B","C073L9LB4K1", "C056WDR3MQR"]
+const CHANNELS_TO_INVITE=["C0266FRGV", "C0C78SG9L","C01D7AHKMPF","C08Q1H6D79B","C073L9LB4K1", "C056WDR3MQR", "C05B6DBN802", "C0M8PUPU6", "C016DEDUL87", "C75M7C0SY"]
 
 export async function handleMCGInvite(client,env,user,alreadyCheckedEmails) {
        const userProfile = await client.users.info({ user })
@@ -46,7 +45,7 @@ console.log(form)
   try {
     client.chat.postMessage({
       channel: `C091XDSB68G`, // Channel ID for the admin channel
-      text: `User <@U07L45W79E1> <@${user}> has been promoted to a full user.`,
+      text: `User <@${user}> has been promoted to a full user.`,
   })
 }  catch (error) {
     console.error('Error posting message to admin channel:', error);
@@ -73,6 +72,7 @@ async function inviteToChannels(client, user) {
         users: user,
       });
       console.log(`Invited ${user} to channel ${channel}:`, res);
+      await new Promise(r=> setTimeout(r, 500)); // Wait for 1 second before next invite
     } catch (error) {
       console.error(`Error inviting ${user} to channel ${channel}:`, error);
       if (error.data && error.data.error === 'already_in_channel') {
