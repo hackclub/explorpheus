@@ -1,3 +1,5 @@
+import { ca } from "zod/v4/locales"
+
 const CHANNELS_TO_INVITE=["C0266FRGV", "C0C78SG9L","C01D7AHKMPF","C08Q1H6D79B","C073L9LB4K1", "C056WDR3MQR"]
 
 export async function handleMCGInvite(client,env,user,alreadyCheckedEmails) {
@@ -42,6 +44,14 @@ console.log(form)
   console.log(JSON.stringify(j, null, 2))
   alreadyCheckedEmails.push(user)
   inviteToChannels(client, user)
+  try {
+    client.chat.postMessage({
+      channel: `C091XDSB68G`, // Channel ID for the admin channel
+      text: `User <@${user}> has been promoted to a full user.`,
+  })
+}  catch (error) {
+    console.error('Error posting message to admin channel:', error);
+  }
   if(env.GARDENS_URL) {
     fetch(env.GARDENS_URL, {
       method: "POST",
