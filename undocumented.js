@@ -42,6 +42,15 @@ console.log(form)
   console.log(JSON.stringify(j, null, 2))
   alreadyCheckedEmails.push(user)
   inviteToChannels(client, user)
+  if(env.GARDENS_URL) {
+    fetch(env.GARDENS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_id: user })
+    }).catch(e=>{})
+  }
   uptimeSanityCheck(client, env, user);
   return true;
 }

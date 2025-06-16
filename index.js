@@ -7,7 +7,7 @@ import { handleMCGInvite} from "./undocumented.js"
 import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
 import crypto from "crypto"
-import JSONDb from "jsondb";
+import JSONDb from "simple-json-db";
 const db = new JSONDb("./db.json")
 const try_again = db.get("try_again") || []
 let alreadyCheckedEmails = []
@@ -25,7 +25,8 @@ let env0 = z.object({
     JR_BASE_ID: z.string(),
     SLACK_XOXP: z.string(),
     UPTIME_URL_THING: z.string(),
-    DOMAIN_OF_HOST: z.string()
+    DOMAIN_OF_HOST: z.string(),
+    GARDENS_URL: z.string().optional(),
 }).safeParse(process.env)
 if(env0.error) {
     throw env0.error
