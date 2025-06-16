@@ -151,6 +151,7 @@ if(join_requests_currently > 10) {
     // check if user is for this - if so dm them.
     console.log(event.user.id)
 await    handleTeamJoinThing(client, airtable, env, last_5_users, event.user.id)
+last_5_users = last_5_users.slice(0,5)
     } catch (e) {
         console.error("Error in team_join event:", e);
         if(e.data && e.data.records) {
@@ -214,7 +215,8 @@ aclient.client.views.publish({
 						"text": "Send user magic url",
 						"emoji": true
 					},
-					"value": "send_magic_url_modal"
+					"value": "send_magic_url_modal",
+                    "action_id": "send_magic_url_modal"
 				},
 				{
 					"type": "button",
@@ -223,7 +225,8 @@ aclient.client.views.publish({
 						"text": "Upgrade user",
 						"emoji": true
 					},
-					"value": "upgrade_user"
+					"value": "upgrade_user",
+                    "action_id": "upgrade_user"
 				},
 				{
 					"type": "button",
@@ -232,7 +235,8 @@ aclient.client.views.publish({
 						"text": "Check if user is on the platform ",
 						"emoji": true
 					},
-					"value": "check_user"
+					"value": "check_user",
+                    "action_id": "check_user"
 				}
 			]
 		},
