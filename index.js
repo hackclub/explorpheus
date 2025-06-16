@@ -384,7 +384,48 @@ aclient.client.views.publish({
 })
 }
 })
-
+// when someone clicks a button from the list above it opens the modal for such button
+aclient.action('send_magic_url_modal', async ({ body, ack, view, context }) => {
+    await ack();
+    // open modal
+    await aclient.client.views.open({
+        trigger_id: body.trigger_id,
+        view: {
+            type: 'modal',
+            callback_id: 'send_magic_url_modal',
+            title: {
+                type: 'plain_text',
+                text: 'Send Magic URL'
+            },
+            blocks: [
+                {
+                    type: 'input',
+                    block_id: 'email_input',
+                    element: {
+                        type: 'plain_text_input',
+                        action_id: 'email_action'
+                    },
+                    label: {
+                        type: 'plain_text',
+                        text: 'Enter user email'
+                    }
+                },
+                {
+                    type: 'input',
+                    block_id: 'slack_id_input',
+                    element: {
+                        type: 'plain_text_input',
+                        action_id: 'slack_id_action'
+                    },
+                    label: {
+                        type: 'plain_text',
+                        text: 'Enter user Slack ID'
+                    }
+                }
+            ]
+        }
+    });
+})
 aclient.start(process.env.PORT).then(() => {
     console.log(`uppies`)
 })
