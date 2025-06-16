@@ -7,6 +7,9 @@ import { handleMCGInvite} from "./undocumented.js"
 import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
 import crypto from "crypto"
+import JSONDb from "jsondb";
+const db = new JSONDb("./db.json")
+const try_again = db.get("try_again") || []
 let alreadyCheckedEmails = []
 let env0 = z.object({ 
     SLACK_XOXB: z.string(),
@@ -120,8 +123,9 @@ res.json({ success:true, message: "queing msgs"})
         return res.status(200).end()
     })
 
-// on team join -> hit bens endpoint -> ??
+// on team join -> hit bens endpoint -> send magic url -> airtable add.
 aclient.event('team_join', async ({ event, context }) => {
+    try {
     join_requests_currently++
     if(join_requests_currently > 4) await new Promise(r=>setTimeout(r,1000))
 if(join_requests_currently > 10) {
@@ -133,11 +137,11 @@ if(join_requests_currently > 10) {
     const info = await client.users.info({ user: event.user.id }).then(d=>d.user.profile)
     const checkOnServersBackend = await fetch(`https://${env.DOMAIN_OF_HOST}/explorpheus/magic-link?token=${env.API_KEY}&email=${encodeURIComponent(info.email)}&slack_id=${event.user.id}`, {
         method: "POST"
-    }).catch(e=> ({text: () => "no", status: 500}))
+    })
     const text = await checkOnServersBackend.text()
     console.debug(text)
 
-    if(checkOnServersBackend.status !== 200) {
+    if(checkOnServersBackend.status == 400 || checkOnServersBackend.status == 204) {
         // not my problem 
         // fun fact this had ran when status was 200 idk why plz kill me
         console.log("bad - ", checkOnServersBackend.status, info.email, event.user.id)
@@ -230,7 +234,19 @@ fetch('https://app.loops.so/api/v1/transactional', {
             "Form Submission IP": IP
         }
     }], "Explorpheus/1.0.0 create user", env.JR_BASE_ID, "SoM 25 Joins").then(d=>console.log(d)).catch(e=>console.error(e))
+    } catch (e) {
+        console.error("Error in team_join event:", e);
+        if(e.data && e.data.records) {
+            console.error("Airtable error records:", e.data.records);
+        }
+        // add to try again queue
+        try_again.push({
+            user: event.user.id,
+        })
+        db.set("try_again", try_again)
+    }    
 })
+    
 
 
 aclient.action('button-action', async ({ body, ack, say }) => {

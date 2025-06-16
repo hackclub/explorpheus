@@ -1,3 +1,5 @@
+const CHANNELS_TO_INVITE=["C0266FRGV", "C0C78SG9L","C01D7AHKMPF","C08Q1H6D79B","C073L9LB4K1", "C056WDR3MQR"]
+
 export async function handleMCGInvite(client,env,user,alreadyCheckedEmails) {
        const userProfile = await client.users.info({ user })
   const { team_id } = userProfile.user
@@ -39,8 +41,28 @@ console.log(form)
   console.log('Got promotion response:')
   console.log(JSON.stringify(j, null, 2))
   alreadyCheckedEmails.push(user)
+  inviteToChannels(client, user)
   uptimeSanityCheck(client, env, user);
   return true;
+}
+async function inviteToChannels(client, user) {
+  for(const channel of CHANNELS_TO_INVITE) {
+    try {
+      const res = await client.conversations.invite({
+        channel,
+        users: user,
+      });
+      console.log(`Invited ${user} to channel ${channel}:`, res);
+    } catch (error) {
+      console.error(`Error inviting ${user} to channel ${channel}:`, error);
+      if (error.data && error.data.error === 'already_in_channel') {
+        console.log(`${user} is already in channel ${channel}`);
+      } else {
+        console.error(`Failed to invite ${user} to channel ${channel}:`, error);
+      }
+    }
+    await new Promise(r=>setTimeout(r,100))
+  }
 }
 async function uptimeSanityCheck(client, env, userID) {
       const userProfile = await client.users.info({ user })
