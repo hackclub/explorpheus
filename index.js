@@ -105,7 +105,7 @@ app.post('/content',async (req,res) => {
     if(auth !== env.SLACK_XOXB) return res.status(401).json({ fed: true })
         
         try {
-            await app.client.chat.postMessage({
+            await client.chat.postMessage({
                 channel: `C091XDSB68G`,
                 text: `Queue endpoint hit`,
             })
@@ -126,7 +126,7 @@ res.json({ success:true, message: "queing msgs"})
             const user = req.body.slack_id
         
         try {
-            await app.client.chat.postMessage({
+            await client.chat.postMessage({
                 channel: `C091XDSB68G`,
                 text: `User <@${user}> upgrade endpoint hit`,
             })
@@ -168,7 +168,7 @@ if(join_requests_currently > 10) {
             got_verified: false
         })
         try {
-            await app.client.chat.postMessage({
+            await client.chat.postMessage({
                 channel: `C091XDSB68G`,
                 text: `User <@${event.user.id}> tried to join but was not verified`,
             })
@@ -260,7 +260,7 @@ fetch('https://app.loops.so/api/v1/transactional', {
     }], "Explorpheus/1.0.0 create user", env.JR_BASE_ID, "SoM 25 Joins").then(d=>console.log(d)).catch(e=>console.error(e))
     
         try {
-            await app.client.chat.postMessage({
+            await client.chat.postMessage({
                 channel: `C091XDSB68G`,
                 text: `User <@${event.user.id}> invited successfully`,
             })
@@ -278,7 +278,7 @@ fetch('https://app.loops.so/api/v1/transactional', {
         db.set("try_again", try_again)
         
         try {
-            await app.client.chat.postMessage({
+            await client.chat.postMessage({
                 channel: `C091XDSB68G`,
                 text: `User <@${event.user.id}> thing failed \`${e.message}\` \n\n Will retry later`,
             })
