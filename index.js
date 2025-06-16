@@ -188,13 +188,13 @@ if(join_requests_currently > 10) {
     const IP = json.ip || "0.0.0.0/24"
     let MAGIC_LINK = json.link || "https://saahild.com/";
     // dm them
-    const textContent = `~1. Join Slack~\n*2. <${MAGIC_LINK}|Set up your account>* _←YOU ARE HERE_\n3. Build a project\n4. :sparkles:Get prizes:sparkles: ԅ(◕‿◕ԅ)`
+    const textContent = `~1. Join Slack~\n*2. <${MAGIC_LINK}|Set up your account>* ← _YOU ARE HERE_\n3. Build a project\n4. :sparkles:Get prizes:sparkles: ԅ(◕‿◕ԅ)`
     const blocksContent =  [
 		{
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": "~1. Join Slack~\n*2. Set up your account* _←YOU ARE HERE_\n3. Build a project\n4. :sparkles:Get prizes:sparkles: ԅ(◕‿◕ԅ)"
+				"text": "~1. Join Slack~\n*2. Set up your account* ← _YOU ARE HERE_\n3. Build a project\n4. :sparkles:Get prizes:sparkles: ԅ(◕‿◕ԅ)"
 			}
 		},
 		{
