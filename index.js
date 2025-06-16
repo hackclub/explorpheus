@@ -188,13 +188,13 @@ if(join_requests_currently > 10) {
     const IP = json.ip || "0.0.0.0/24"
     let MAGIC_LINK = json.link || "https://saahild.com/";
     // dm them
-    const textContent = "click below to get to the tutorial!"
+    const textContent = `~1. Join Slack~\n*2. <${MAGIC_LINK}|Set up your account>* _←YOU ARE HERE_\n3. Build a project\n4. :sparkles:Get prizes:sparkles: ԅ(◕‿◕ԅ)`
     const blocksContent =  [
 		{
 			"type": "header",
 			"text": {
 				"type": "plain_text",
-				"text": "click below to get to the tutorial!"
+				"text": "~1. Join Slack~\n*2. Set up your account* _←YOU ARE HERE_\n3. Build a project\n4. :sparkles:Get prizes:sparkles: ԅ(◕‿◕ԅ)"
 			}
 		},
 		{
@@ -204,7 +204,7 @@ if(join_requests_currently > 10) {
 					"type": "button",
 					"text": {
 						"type": "plain_text",
-						"text": ":hii: click me! :siren-real:",
+						"text": ":som-point-right-animated: SET UP YOUR ACCOUNT :som-point-left-animated:",
 						"emoji": true
 					},
 					"value": "meow",
