@@ -3,13 +3,13 @@ import express from "express"
 // import { WebClient } from "@slack/web-api"
 const  App  = await import('@slack/bolt');
 // console.log([App.default])
-import { handleMCGInvite} from "./undocumented.js"
+import { handleMCGInvite, handleTeamJoinThing} from "./undocumented.js"
 import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
 import crypto from "crypto"
 import JSONDb from "simple-json-db";
 const db = new JSONDb("./db.json")
-const try_again = db.get("try_again") || []
+let try_again = db.get("try_again") || []
 let alreadyCheckedEmails = []
 let env0 = z.object({ 
     SLACK_XOXB: z.string(),
@@ -150,122 +150,7 @@ if(join_requests_currently > 10) {
 }
     // check if user is for this - if so dm them.
     console.log(event.user.id)
-    // get user email 
-    const info = await client.users.info({ user: event.user.id }).then(d=>d.user.profile)
-    const checkOnServersBackend = await fetch(`https://${env.DOMAIN_OF_HOST}/explorpheus/magic-link?token=${env.API_KEY}&email=${encodeURIComponent(info.email)}&slack_id=${event.user.id}`, {
-        method: "POST"
-    })
-    const text = await checkOnServersBackend.text()
-    console.debug(text)
-
-    if(checkOnServersBackend.status == 400 || checkOnServersBackend.status == 204) {
-        // not my problem 
-        // fun fact this had ran when status was 200 idk why plz kill me
-        console.log("bad - ", checkOnServersBackend.status, info.email, event.user.id)
-        last_5_users.unshift({
-            id: event.user.id, 
-            date: Date.now(),
-            got_verified: false
-        })
-        try {
-            await client.chat.postMessage({
-                channel: `C091XDSB68G`,
-                text: `User <@${event.user.id}> tried to join but was not verified`,
-            })
-        } catch (e) {
-        }
-        last_5_users = last_5_users.slice(0,5)
-        return;
-    }
-      last_5_users.unshift({
-            id: event.user.id, 
-            date: Date.now(),
-            got_verified: true
-        })
-        last_5_users = last_5_users.slice(0,5)
-    const json = await JSON.parse(text)
-    const UA = json.user_agent || "No UA"
-    const IP = json.ip || "0.0.0.0/24"
-    let MAGIC_LINK = json.link || "https://saahild.com/";
-    // dm them
-    const textContent = `~1. Join Slack~\n*2. <${MAGIC_LINK}|Set up your account>* ← _YOU ARE HERE_\n3. Build a project\n4. :sparkles:Get prizes:sparkles: ԅ(◕‿◕ԅ)`
-    const blocksContent =  [
-		{
-			"type": "section",
-			"text": {
-				"type": "mrkdwn",
-				"text": "~1. Join Slack~\n*2. Set up your account* ← _YOU ARE HERE_\n3. Build a project\n4. :sparkles:Get prizes:sparkles: ԅ(◕‿◕ԅ)"
-			}
-		},
-		{
-			"type": "actions",
-			"elements": [
-				{
-					"type": "button",
-					"text": {
-						"type": "plain_text",
-						"text": ":som-point-right-animated: SET UP YOUR ACCOUNT :som-point-left-animated:",
-						"emoji": true
-					},
-					"value": "meow",
-					"url": MAGIC_LINK,
-					"action_id": "button-action"
-				}
-			]
-		}
-	]
-    
-fetch('https://app.loops.so/api/v1/transactional', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer '+env.LOOPS_API_KEY,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    'email': info.email,
-    'transactionalId': env.LOOPS_ID,
-    'addToAudience': true,
-    'dataVariables': {
-      'auth_link': MAGIC_LINK
-    }
-  })
-}).then(d=>d.text()).then(console.log).catch(console.error)
-   const msgs = await Promise.all([client.chat.postMessage({
-        channel: event.user.id, 
-       blocks: blocksContent,
-       token: env.SLACK_XOXP
-    }), client.chat.postMessage({
-        channel: event.user.id,
-        text: textContent,
-        blocks: blocksContent,
-        username: 'Explorpheus',
-        icon_url: 'https://hc-cdn.hel1.your-objectstorage.com/s/v3/d6d828d6ba656d09a62add59dc07e2974bfdb38f_image.png',
-    })
-])
-;
-    // update airtable by creating a record
-    await airtable.createBulk([{
-        fields: {
-            Email: info.email,
-            "Slack ID": event.user.id,
-            // message_link_sent_to_user: await aclient.client.chat.getPermalink({
-            //     channel: msg.channel,
-            //     message_ts: msg.ts,
-            // }).then(d=>d.permalink)
-            magic_link: MAGIC_LINK,
-            // dummy data for now ;-;
-            "User Agent": UA,
-            "Form Submission IP": IP
-        }
-    }], "Explorpheus/1.0.0 create user", env.JR_BASE_ID, "SoM 25 Joins").then(d=>console.log(d)).catch(e=>console.error(e))
-    
-        try {
-            await client.chat.postMessage({
-                channel: `C091XDSB68G`,
-                text: `User <@${event.user.id}> invited successfully`,
-            })
-        } catch (e) {
-        }
+await    handleTeamJoinThing(client, airtable, env, last_5_users, event.user.id)
     } catch (e) {
         console.error("Error in team_join event:", e);
         if(e.data && e.data.records) {
@@ -433,6 +318,48 @@ aclient.start(process.env.PORT).then(() => {
 setInterval(() => {
     join_requests_currently = 0;
 }, 60 * 1000)
+async function reTryLoop() {
+    const found = []
+    for(const { user } of try_again.slice(0,10)) {
+     try {
+           try {
+            await client.chat.postMessage({
+                channel: `C091XDSB68G`,
+                text: `User <@${user}> is being tried again :)`,
+            })
+        } catch (e) {
+        }
+        await handleTeamJoinThing(client, airtable, env, last_5_users, user)
+        found.push(user)
+     }    catch (e) {
+
+        console.error("Error in retry loop:", e);
+        if(e.data && e.data.records) {
+            console.error("Airtable error records:", e.data.records);
+        }
+           try {
+            await client.chat.postMessage({
+                channel: `C091XDSB68G`,
+                text: `User <@${user}> failed AGAIN\n trying again soon`,
+            })
+        } catch (e) {
+        }
+
+        continue;
+     } finally {
+        await new Promise(r=>setTimeout(r, 500))
+     }
+    }
+    try_again = try_again.filter(d => !found.includes(d.user))
+    db.set("try_again", try_again)
+    console.log(`Yay! Retried ${found.length} users`)
+}
+async function retryLooped() {
+    await reTryLoop()
+    await new Promise(r => setTimeout(r, 1000 * 60 * 1)) // wait 1 minute
+    retryLooped()
+}
+retryLooped()
 // aclient.r 
 // magic-url
 sendQueueMessage()

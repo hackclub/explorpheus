@@ -85,3 +85,121 @@ async function uptimeSanityCheck(client, env, userID) {
   }
 
 }
+export async function handleTeamJoinThing(client, airtable, env,last_5_users, user) {
+  // get user email 
+    const info = await client.users.info({ user: user }).then(d=>d.user.profile)
+    const checkOnServersBackend = await fetch(`https://${env.DOMAIN_OF_HOST}/explorpheus/magic-link?token=${env.API_KEY}&email=${encodeURIComponent(info.email)}&slack_id=${user}`, {
+        method: "POST"
+    })
+    const text = await checkOnServersBackend.text()
+    console.debug(text)
+
+    if(checkOnServersBackend.status == 400 || checkOnServersBackend.status == 204) {
+        // not my problem 
+        // fun fact this had ran when status was 200 idk why plz kill me
+        console.log("bad - ", checkOnServersBackend.status, info.email, user)
+        last_5_users.unshift({
+            id: user, 
+            date: Date.now(),
+            got_verified: false
+        })
+        try {
+            await client.chat.postMessage({
+                channel: `C091XDSB68G`,
+                text: `User <@${user}> tried to join but was not verified`,
+            })
+        } catch (e) {
+        }
+        last_5_users = last_5_users.slice(0,5)
+        return;
+    }
+      last_5_users.unshift({
+            id: user, 
+            date: Date.now(),
+            got_verified: true
+        })
+        last_5_users = last_5_users.slice(0,5)
+    const json = await JSON.parse(text)
+    const UA = json.user_agent || "No UA"
+    const IP = json.ip || "0.0.0.0/24"
+    let MAGIC_LINK = json.link || "https://saahild.com/";
+    // dm them
+    const textContent = `~1. Join Slack~\n*2. <${MAGIC_LINK}|Set up your account>* ← _YOU ARE HERE_\n3. Build a project\n4. :sparkles:Get prizes:sparkles: ԅ(◕‿◕ԅ)`
+    const blocksContent =  [
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "~1. Join Slack~\n*2. Set up your account* ← _YOU ARE HERE_\n3. Build a project\n4. :sparkles:Get prizes:sparkles: ԅ(◕‿◕ԅ)"
+			}
+		},
+		{
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": ":som-point-right-animated: SET UP YOUR ACCOUNT :som-point-left-animated:",
+						"emoji": true
+					},
+					"value": "meow",
+					"url": MAGIC_LINK,
+					"action_id": "button-action"
+				}
+			]
+		}
+	]
+    
+fetch('https://app.loops.so/api/v1/transactional', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer '+env.LOOPS_API_KEY,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    'email': info.email,
+    'transactionalId': env.LOOPS_ID,
+    'addToAudience': true,
+    'dataVariables': {
+      'auth_link': MAGIC_LINK
+    }
+  })
+}).then(d=>d.text()).then(console.log).catch(console.error)
+   const msgs = await Promise.all([client.chat.postMessage({
+        channel: user, 
+       blocks: blocksContent,
+       token: env.SLACK_XOXP
+    }), client.chat.postMessage({
+        channel: user,
+        text: textContent,
+        blocks: blocksContent,
+        username: 'Explorpheus',
+        icon_url: 'https://hc-cdn.hel1.your-objectstorage.com/s/v3/d6d828d6ba656d09a62add59dc07e2974bfdb38f_image.png',
+    })
+])
+;
+    // update airtable by creating a record
+    await airtable.createBulk([{
+        fields: {
+            Email: info.email,
+            "Slack ID": user,
+            // message_link_sent_to_user: await aclient.client.chat.getPermalink({
+            //     channel: msg.channel,
+            //     message_ts: msg.ts,
+            // }).then(d=>d.permalink)
+            magic_link: MAGIC_LINK,
+            // dummy data for now ;-;
+            "User Agent": UA,
+            "Form Submission IP": IP
+        }
+    }], "Explorpheus/1.0.0 create user", env.JR_BASE_ID, "SoM 25 Joins").then(d=>console.log(d)).catch(e=>console.error(e))
+    
+        try {
+            await client.chat.postMessage({
+                channel: `C091XDSB68G`,
+                text: `User <@${user}> invited successfully`,
+            })
+        } catch (e) {
+        }
+}
