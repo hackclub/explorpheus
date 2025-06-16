@@ -43,24 +43,25 @@ console.log(form)
   console.log('Got promotion response:')
   console.log(JSON.stringify(j, null, 2))
   alreadyCheckedEmails.push(user)
-  inviteToChannels(client, user)
   try {
     client.chat.postMessage({
       channel: `C091XDSB68G`, // Channel ID for the admin channel
-      text: `User <@${user}> has been promoted to a full user.`,
+      text: `User <@U07L45W79E1> <@${user}> has been promoted to a full user.`,
   })
 }  catch (error) {
     console.error('Error posting message to admin channel:', error);
   }
-  if(env.GARDENS_URL) {
+  // if(env.GARDENS_URL) {
     fetch(env.GARDENS_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ user_id: user })
-    }).catch(e=>{})
-  }
+    })
+    await new Promise(r=>setTimeout(r,1000))
+  inviteToChannels(client, user).catch(e=>console.error(e))
+  // }
   uptimeSanityCheck(client, env, user);
   return true;
 }
@@ -83,13 +84,13 @@ async function inviteToChannels(client, user) {
     await new Promise(r=>setTimeout(r,100))
   }
 }
-async function uptimeSanityCheck(client, env, userID) {
+async function uptimeSanityCheck(client, env, user) {
       const userProfile = await client.users.info({ user })
   if (
     !userProfile.user.is_restricted &&
     !userProfile.user.is_ultra_restricted
   ) {
-    console.log(`User ${userID} is already a full user– skipping`)
+    console.log(`User ${user} is already a full user– skipping`)
     // return;
     fetch(env.UPTIME_URL_THING).catch(e=>{})
   }
