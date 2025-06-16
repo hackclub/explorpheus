@@ -99,12 +99,20 @@ if(updateRecords.length > 0) {
 }
 }
 app.get('/healthcheck',(req,res) => {res.sendStatus(200)})
-app.post('/content',(req,res) => {
+app.post('/content',async (req,res) => {
     const auth = req.headers["authorization"]
     if(auth !== env.SLACK_XOXB) return res.status(401).json({ fed: true })
+        
+        try {
+            await app.client.chat.postMessage({
+                channel: `C091XDSB68G`,
+                text: `Queue endpoint hit`,
+            })
+        } catch (e) {
+        }
         // const { to, from, content, airtableId } = req.body;
     console.log(`[REQ] queing time!`)
-    sendQueueMessage()
+   await  sendQueueMessage()
 res.json({ success:true, message: "queing msgs"})
     })
 
@@ -115,6 +123,14 @@ res.json({ success:true, message: "queing msgs"})
         }
        if(alreadyCheckedEmails.includes(req.body.slack_id)) return res.status(400).end()
             const user = req.body.slack_id
+        
+        try {
+            await app.client.chat.postMessage({
+                channel: `C091XDSB68G`,
+                text: `User <@${user}> upgrade endpoint hit`,
+            })
+        } catch (e) {
+        }
         // check if user is upgraded already
    const proc = await handleMCGInvite(client, env, user, alreadyCheckedEmails)
    if(!proc) {
@@ -150,6 +166,13 @@ if(join_requests_currently > 10) {
             date: Date.now(),
             got_verified: false
         })
+        try {
+            await app.client.chat.postMessage({
+                channel: `C091XDSB68G`,
+                text: `User <@${event.user.id}> tried to join but was not verified`,
+            })
+        } catch (e) {
+        }
         last_5_users = last_5_users.slice(0,5)
         return;
     }
@@ -234,6 +257,14 @@ fetch('https://app.loops.so/api/v1/transactional', {
             "Form Submission IP": IP
         }
     }], "Explorpheus/1.0.0 create user", env.JR_BASE_ID, "SoM 25 Joins").then(d=>console.log(d)).catch(e=>console.error(e))
+    
+        try {
+            await app.client.chat.postMessage({
+                channel: `C091XDSB68G`,
+                text: `User <@${event.user.id}> invited successfully`,
+            })
+        } catch (e) {
+        }
     } catch (e) {
         console.error("Error in team_join event:", e);
         if(e.data && e.data.records) {
@@ -244,6 +275,14 @@ fetch('https://app.loops.so/api/v1/transactional', {
             user: event.user.id,
         })
         db.set("try_again", try_again)
+        
+        try {
+            await app.client.chat.postMessage({
+                channel: `C091XDSB68G`,
+                text: `User <@${event.user.id}> thing failed \`${e.message}\` \n\n Will retry later`,
+            })
+        } catch (e) {
+        }
     }    
 })
     
