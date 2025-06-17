@@ -13,5 +13,5 @@ This code is licensed under `MIT`!
 2. run `pnpm install`
 3. run `pnpm start` :)
 
-[!NOTE]
+> [!NOTE]
 > there is some hardcoded stuff which you will have to replace
