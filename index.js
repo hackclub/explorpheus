@@ -263,6 +263,41 @@ aclient.client.views.publish({
 })
 }
 })
+aclient.view('upgrade_user', async ({ ack, body, view, context }) => {
+    await ack();
+
+    const slackId = view.state.values.slack_id_input.slack_id_action.value;
+
+    // Do something with the Slack ID
+    console.log(`Upgrading user with Slack ID: ${slackId}`);
+    if(!slackId || slackId.length < 5) {
+        await ack({
+    response_action: 'errors',
+    errors: {
+        slack_id_input: 'Please enter a valid Slack ID.'
+    }
+});
+return;
+    }
+    try {
+        await handleMCGInvite(client, env, slackId, alreadyCheckedEmails);
+        await aclient.client.chat.postMessage({
+            channel: body.user.id,
+            text: `<@${slackId}> has been upgraded!`
+        });
+        await aclient.client.chat.postMessage({
+            channel: `C091XDSB68G`,
+            text: `User <@${slackId}> has been upgraded! (_manually by <@${body.user.id}>_)`,
+        })
+    } catch (error) {
+        console.error(error);
+        await aclient.client.chat.postMessage({
+            channel: body.user.id,
+            text: `Failed to upgrade <@${slackId}>. Please check the logs for more details.`
+        });
+    }
+});
+
 // when someone clicks a button from the list above it opens the modal for such button
 aclient.action('upgrade_user', async ({ body, ack, view, context }) => {
     await ack();
@@ -297,6 +332,52 @@ aclient.action('upgrade_user', async ({ body, ack, view, context }) => {
         }
     });
 })
+aclient.view('check_user', async ({ ack, body, view, context }) => {
+    await ack();
+
+    const slackId = view.state.values.slack_id_input.slack_id_action.value;
+
+    // Do something with the Slack ID
+    console.log(`check user with Slack ID: ${slackId}`);
+    if(!slackId || slackId.length < 5) {
+        await ack({
+    response_action: 'errors',
+    errors: {
+        slack_id_input: 'Please enter a valid Slack ID.'
+    }
+});
+return;
+    }
+    const info = await client.users.info({ user: slackId }).catch(e => {
+        console.error("Failed to fetch user info:", e);
+        return null;
+    })
+    if(!info || !info.user) {
+          await ack({
+    response_action: 'errors',
+    errors: {
+        slack_id_input: 'Please enter a valid Slack ID.'
+    }
+});
+return;
+    }
+    const email = info.user.profile.email;
+    try {
+        const is_on_the_platform = await fetch(`https://${env.DOMAIN_OF_HOST}/explorpheus/magic-link?token=${env.API_KEY}&email=${encodeURIComponent(email)}&slack_id=${slackId}`, {
+            method: "POST"
+        }).then(r=>r.json()).then(d=>d.status == 200)
+        await aclient.client.chat.postMessage({
+            channel: body.user.id,
+            text: `<@${slackId}> ${is_on_the_platform ? "is" : "is not"} on the platform!`
+        });
+        await aclient.client.chat.postMessage({
+            channel: `C091XDSB68G`,
+            text: `User <@${slackId}> was checked if they were on the platform!(fun fact: ${is_on_the_platform? "they are on it" : "they are not on it :3"})  (_manually by <@${body.user.id}>_)`,
+        })
+    } catch (error) {
+        console.error(error);
+    }
+});
 
 aclient.action('check_user', async ({ body, ack, view, context }) => {
     await ack();
