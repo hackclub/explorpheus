@@ -6,7 +6,6 @@ const  App  = await import('@slack/bolt');
 import { handleMCGInvite, handleTeamJoinThing} from "./undocumented.js"
 import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
-import crypto from "crypto"
 import JSONDb from "simple-json-db";
 const db = new JSONDb("./db.json")
 let try_again = db.get("try_again") || []
