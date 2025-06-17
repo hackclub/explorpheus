@@ -2,7 +2,7 @@
   "name": "explorpheus",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node src/index.js"
   },
   "dependencies": {
     "@slack/bolt": "^4.4.0",

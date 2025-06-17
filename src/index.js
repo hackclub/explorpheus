@@ -99,7 +99,26 @@ if(updateRecords.length > 0) {
 }).then(r=>r.json()).then(d=> console.log("Updated records", d))
 }
 }
-app.get('/healthcheck',(req,res) => {res.sendStatus(200)})
+app.get('/healthcheck',(req,res) => {
+    // example db query  (yes ik its a json db ;-;)
+    db.set("1", 2)
+    let is_fully_ok = false;
+    let is_db_ok = false
+    try {
+        is_db_ok = db.get("1") === 2
+        if(is_db_ok) {
+            is_fully_ok = true;
+        }
+    } catch (e) {
+        console.error("DB error", e)
+    }
+    let is_up = true;
+    if(is_fully_ok) {
+        res.status(200).json({ is_up,is_db_ok, is_fully_ok, airtable_under_press })
+    } else {
+        res.status(500).json({ is_up, is_db_ok, is_fully_ok, airtable_under_press })
+    }
+})
 app.post('/content',async (req,res) => {
     const auth = req.headers["authorization"]
     if(auth !== env.SLACK_XOXB) return res.status(401).json({ fed: true })
