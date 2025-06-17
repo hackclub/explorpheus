@@ -26,6 +26,7 @@ let env0 = z.object({
     UPTIME_URL_THING: z.string(),
     DOMAIN_OF_HOST: z.string(),
     GARDENS_URL: z.string().optional(),
+    BANNED_USERS: z.string()
 }).safeParse(process.env)
 if(env0.error) {
     throw env0.error

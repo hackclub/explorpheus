@@ -2,14 +2,15 @@
 const CHANNELS_TO_INVITE=["C0266FRGV", "C0C78SG9L","C01D7AHKMPF","C08Q1H6D79B","C073L9LB4K1", "C056WDR3MQR", "C05B6DBN802", "C0M8PUPU6", "C016DEDUL87", "C75M7C0SY"]
 
 export async function handleMCGInvite(client,env,user,alreadyCheckedEmails) {
+  const BANNED_USERS = env.BANNED_USERS ? env.BANNED_USERS.split(',') : [];
        const userProfile = await client.users.info({ user })
   const { team_id } = userProfile.user
 
   if (
-    !userProfile.user.is_restricted &&
-    !userProfile.user.is_ultra_restricted
+   (!userProfile.user.is_restricted &&
+    !userProfile.user.is_ultra_restricted) || BANNED_USERS.includes(user)
   ) {
-    console.log(`User ${user} is already a full user– skipping`)
+    console.log(`User ${user} is already a full user– or banned. skipping`)
     alreadyCheckedEmails.push(user)
     return false;
   }
