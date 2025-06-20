@@ -7,6 +7,7 @@ import { handleMCGInvite, handleTeamJoinThing} from "./undocumented.js"
 import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
 import JSONDb from "simple-json-db";
+import expressStatusMonitor from 'express-status-monitor';
 const db = new JSONDb("./db.json")
 let try_again = db.get("try_again") || []
 let alreadyCheckedEmails = []
@@ -51,6 +52,21 @@ const airtable = new AirtableFetch({
 })
 const app = receiver.app;
 app.use(express.json())
+app.use(expressStatusMonitor({
+        title: "Explorpheus stability",
+    
+    healthChecks: [{
+    protocol   : 'https',
+    host       : env.DOMAIN_OF_HOST,
+    path       : '/healthcheck',
+    port : "443",
+    }, {
+        protocol: 'https',
+        host: "explorpheus.hackclub.com",
+        path: "/healthcheck",
+        port: "443",
+    }]
+}))
 app.get('/', (req,res) => res.send('hi:3'))
 
 
