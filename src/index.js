@@ -33,7 +33,20 @@ if(env0.error) {
     throw env0.error
 }
 const env = env0.data
+// stats vars
 let last_5_users = []
+let users_joined = 0;
+let users_joined_but_valid = 0
+let upgrade_endpoint_hit_count = 0
+let upgraded_users = 0;
+let user_last_upgraded_at = Date.now()
+let user_last_joined_at = Date.now()
+let user_last_joined_at_confirmed = Date.now()
+let user_upgrade_endpoint_last_hit = Date.now()
+let  button_clicks = 0 
+let try_agains = 0;
+let last_tried_agained = Date.now()
+// end stat vars
 const receiver = new App.default.ExpressReceiver({
   signingSecret: env.SLACK_SIGNING_SECRET,
   endpoints: '/slack/events', // This is the default endpoint for Slack events
@@ -58,7 +71,7 @@ app.use(expressStatusMonitor({
     healthChecks: [{
     protocol   : 'https',
     host       : env.DOMAIN_OF_HOST,
-    path       : '/healthcheck',
+    path       : '/up',
     port : "443",
     }, {
         protocol: 'https',
@@ -139,13 +152,13 @@ app.post('/content',async (req,res) => {
     const auth = req.headers["authorization"]
     if(auth !== env.SLACK_XOXB) return res.status(401).json({ fed: true })
         
-        try {
-            await client.chat.postMessage({
-                channel: `C091XDSB68G`,
-                text: `Queue endpoint hit`,
-            })
-        } catch (e) {
-        }
+        // try {
+        //     await client.chat.postMessage({
+        //         channel: `C091XDSB68G`,
+        //         text: `Queue endpoint hit`,
+        //     })
+        // } catch (e) {
+        // }
         // const { to, from, content, airtableId } = req.body;
     console.log(`[REQ] queing time!`)
    await  sendQueueMessage()
@@ -153,7 +166,9 @@ res.json({ success:true, message: "queing msgs"})
     })
 
     app.post('/verified', async (req,res) => {
-        console.log(req.body)
+        upgrade_endpoint_hit_count++
+   user_upgrade_endpoint_last_hit = Date.now()
+        // console.log(req.body)
         if(req.body.token !== env.API_KEY) {
             return res.status(401).end()
         }
@@ -172,11 +187,15 @@ res.json({ success:true, message: "queing msgs"})
    if(!proc) {
         return res.status(403).end()
    }
+   upgraded_users++;
+   user_last_upgraded_at = Date.now()
         return res.status(200).end()
     })
 
 // on team join -> hit bens endpoint -> send magic url -> airtable add.
 aclient.event('team_join', async ({ event, context }) => {
+    users_joined++;
+    user_last_joined_at = Date.now()
     try {
     join_requests_currently++
     if(join_requests_currently > 4) await new Promise(r=>setTimeout(r,1000))
@@ -187,6 +206,8 @@ if(join_requests_currently > 10) {
     console.log(event.user.id)
 await    handleTeamJoinThing(client, airtable, env, last_5_users, event.user.id)
 last_5_users = last_5_users.slice(0,5)
+user_last_joined_at_confirmed = Date.now()
+users_joined_but_valid++
     } catch (e) {
         console.error("Error in team_join event:", e);
         if(e.data && e.data.records) {
@@ -197,7 +218,8 @@ last_5_users = last_5_users.slice(0,5)
             user: event.user.id,
         })
         db.set("try_again", try_again)
-        
+        try_agains++
+        last_tried_agained = Date.now()
         try {
             await client.chat.postMessage({
                 channel: `C091XDSB68G`,
@@ -211,6 +233,7 @@ last_5_users = last_5_users.slice(0,5)
 
 
 aclient.action('button-action', async ({ body, ack, say }) => {
+    button_clicks++;
     await ack();
 });
 aclient.event("app_home_opened", async ({ event, context }) => {
@@ -238,6 +261,13 @@ aclient.client.views.publish({
 			"text": {
 				"type": "mrkdwn",
 				"text": `Hi there <@${event.user}>, here you can promote people to normal users and also send magic links.. below the buttons is the last 5 users who joined..`
+			}
+		},
+        {
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": `Stats:\n*Users joined*: ${users_joined} (% of valid: ${((users_joined_but_valid/users_joined)*100).toFixed(2)}%) (last time event fired: ${new Date(user_last_joined_at).toString()} )\n*Users joined but valid*: ${users_joined_but_valid} (users who clicked button: ${((button_clicks/users_joined_but_valid)*100).toFixed(2)}%) (last valid one at: ${new Date(user_last_joined_at_confirmed).toString()}) \n*Upgrade endpoint hit count*: ${upgrade_endpoint_hit_count} (valid percent: ${((upgraded_users/upgrade_endpoint_hit_count)*100).toFixed(2)}) (last time endpoint hit: ${new Date(user_upgrade_endpoint_last_hit).toString()}) \n*Upgraded users*: ${upgraded_users} (last hit: ${new Date(user_last_upgraded_at).toString()})\n*Button clicks*: ${button_clicks} (last time button clicked: ${new Date(button_clicks).toString()})\n*Try agains*: ${try_agains} (last time tried again: ${new Date(last_tried_agained).toString()})\n*Last retry looped at*: ${new Date(Date.now()).toString()}`
 			}
 		},
 		{
@@ -456,6 +486,7 @@ setInterval(() => {
     join_requests_currently = 0;
 }, 60 * 1000)
 async function reTryLoop() {
+    
     const found = []
     for(const { user } of try_again.slice(0,10)) {
      try {
