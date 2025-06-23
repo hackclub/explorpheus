@@ -164,7 +164,7 @@ export async function handleTeamJoinThing(client, airtable, env,last_5_users, us
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": `*Questions?* Read the <https://hackclub.slack.com/docs/T0266FRGM/F092J37Q0SE|FAQ > first, if you have something *which is not on the faq* head to <#C090JKDJYN8>!`
+        "text": `*Questions?* Read the <https://hackclub.slack.com/docs/T0266FRGM/F090MQF0H2Q|FAQ > first, if you have something *which is not on the faq* head to <#C090JKDJYN8>!`
       }
     }
 	]

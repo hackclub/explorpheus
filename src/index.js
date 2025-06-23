@@ -172,13 +172,13 @@ res.json({ success:true, message: "queing msgs"})
        if(alreadyCheckedEmails.includes(req.body.slack_id)) return res.status(400).end()
             const user = req.body.slack_id
         
-        try {
-            await client.chat.postMessage({
-                channel: `C091XDSB68G`,
-                text: `User <@${user}> upgrade endpoint hit`,
-            })
-        } catch (e) {
-        }
+        // try {
+            // await client.chat.postMessage({
+                // channel: `C091XDSB68G`,
+                // text: `User <@${user}> upgrade endpoint hit`,
+            // })
+        // } catch (e) {
+        // }
         // check if user is upgraded already
    const proc = await handleMCGInvite(client, env, user, alreadyCheckedEmails)
    if(!proc) {
