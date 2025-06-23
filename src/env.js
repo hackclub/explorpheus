@@ -1,0 +1,20 @@
+import { z } from "zod";
+export default  z
+  .object({
+    SLACK_XOXB: z.string(),
+    SLACK_XOXC: z.string(),
+    SLACK_XOXD: z.string(),
+    AIRTABLE_KEY: z.string(),
+    BASE_ID: z.string(),
+    API_KEY: z.string(),
+    APP_TOKEN: z.string().optional(),
+    SLACK_SIGNING_SECRET: z.string(),
+    LOOPS_ID: z.string(),
+    LOOPS_API_KEY: z.string(),
+    JR_BASE_ID: z.string(),
+    SLACK_XOXP: z.string(),
+    UPTIME_URL_THING: z.string(),
+    DOMAIN_OF_HOST: z.string(),
+    GARDENS_URL: z.string().optional(),
+    BANNED_USERS: z.string(),
+  })

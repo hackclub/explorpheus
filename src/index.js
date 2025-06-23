@@ -8,28 +8,11 @@ import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
 import JSONDb from "simple-json-db";
 import expressStatusMonitor from "express-status-monitor";
+import envSchema from "./env.js";
 const db = new JSONDb("./db.json");
 let try_again = db.get("try_again") || [];
 let alreadyCheckedEmails = [];
-let env0 = z
-  .object({
-    SLACK_XOXB: z.string(),
-    SLACK_XOXC: z.string(),
-    SLACK_XOXD: z.string(),
-    AIRTABLE_KEY: z.string(),
-    BASE_ID: z.string(),
-    API_KEY: z.string(),
-    APP_TOKEN: z.string().optional(),
-    SLACK_SIGNING_SECRET: z.string(),
-    LOOPS_ID: z.string(),
-    LOOPS_API_KEY: z.string(),
-    JR_BASE_ID: z.string(),
-    SLACK_XOXP: z.string(),
-    UPTIME_URL_THING: z.string(),
-    DOMAIN_OF_HOST: z.string(),
-    GARDENS_URL: z.string().optional(),
-    BANNED_USERS: z.string(),
-  })
+let env0 = envSchema
   .safeParse(process.env);
 if (env0.error) {
   throw env0.error;
@@ -51,7 +34,7 @@ let last_tried_agained = Date.now();
 // end stat vars
 const receiver = new App.default.ExpressReceiver({
   signingSecret: env.SLACK_SIGNING_SECRET,
-  endpoints: "/slack/events", // This is the default endpoint for Slack events
+  endpoints: "/slack/events", 
 });
 let airtable_under_press = false;
 let join_requests_currently = 0;
@@ -171,12 +154,6 @@ app.get("/healthcheck", (req, res) => {
 app.post("/content", async (req, res) => {
   const auth = req.headers["authorization"];
   if (auth !== env.SLACK_XOXB) return res.status(401).json({ fed: true });
-
-  //         text: `Queue endpoint hit`,
-  //     })
-  // } catch (e) {
-  // }
-  // const { to, from, content, airtableId } = req.body;
   console.log(`[REQ] queing time!`);
   await sendQueueMessage();
   res.json({ success: true, message: "queing msgs" });
@@ -510,10 +487,7 @@ aclient.action("check_user", async ({ body, ack, view, context }) => {
 aclient.start(process.env.PORT).then(() => {
   console.log(`uppies`);
 });
-// reset major count every 60s
-setInterval(() => {
-  join_requests_currently = 0;
-}, 60 * 1000);
+
 async function reTryLoop() {
   const found = [];
   for (const { user } of try_again.slice(0, 10)) {
@@ -553,6 +527,5 @@ async function retryLooped() {
   retryLooped();
 }
 retryLooped();
-// aclient.r
 // magic-url
 sendQueueMessage();

@@ -6,3 +6,4 @@
 .env.keys
 node_modules
 db.json
+users.txt
