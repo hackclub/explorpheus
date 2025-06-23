@@ -152,9 +152,6 @@ app.post('/content',async (req,res) => {
     const auth = req.headers["authorization"]
     if(auth !== env.SLACK_XOXB) return res.status(401).json({ fed: true })
         
-        // try {
-        //     await client.chat.postMessage({
-        //         channel: `C091XDSB68G`,
         //         text: `Queue endpoint hit`,
         //     })
         // } catch (e) {

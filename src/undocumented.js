@@ -160,7 +160,13 @@ export async function handleTeamJoinThing(client, airtable, env,last_5_users, us
 					"action_id": "button-action"
 				}
 			]
-		}
+		}, {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": `*Questions?* Read the <https://hackclub.slack.com/docs/T0266FRGM/F092J37Q0SE|FAQ > first, if you have something *which is not on the faq* head to <#C090JKDJYN8>!`
+      }
+    }
 	]
     
 fetch('https://app.loops.so/api/v1/transactional', {
