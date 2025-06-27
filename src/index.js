@@ -586,6 +586,7 @@ aclient.command('/som-watch-my-balance', async ({ command, ack, respond }) => {
 aclient.command('/som-add-channel', async ({ command, ack, respond }) => {
   await ack()
   const slackRef = await keyv.get(`user_` + command.user_id);
+  const channel_id = command.text.trim() || command.channel_id
   if(slackRef == undefined) {
     return respond({
       response_type: 'ephemeral',
@@ -602,18 +603,18 @@ aclient.command('/som-add-channel', async ({ command, ack, respond }) => {
   }
   somDbRef.channels_to_share_to = somDbRef.channels_to_share_to || [];
   // check if channel is already in the list
-  if(somDbRef.channels_to_share_to.includes(command.channel_id)) {
+  if(somDbRef.channels_to_share_to.includes(channel_id)) {
     return respond({
       response_type: 'ephemeral',
       text: `:x: This channel is already in the list!`
     })
   }
   // add channel to the list
-  somDbRef.channels_to_share_to.push(command.channel_id.replaceAll("<#", "").replaceAll(">", ""));
+  somDbRef.channels_to_share_to.push(channel_id.replaceAll("<#", "").replaceAll(">", ""));
   await keyv.set(`user_` + slackRef, somDbRef);
   respond({
     response_type: 'ephemeral',
-    text: `:done: Channel <#${command.channel_id}> has been added to the list!`
+    text: `:done: Channel <#${channel_id.replace("<#", "").replace(">", '')}> has been added to the list!`
   })
 })
 async function queryPayoutsAndUpdateThemUsers() {
