@@ -525,7 +525,7 @@ aclient.start(process.env.PORT).then(() => {
 app.get('/leaderboard', async (req,res) => {
 try {
     const users_list = await keyv.get("users_list") || [];
-  const users = await keyv.getMany(users_list)
+  const users = await keyv.getMany(users_list.map(d=>`user_`+d))
 res.json(users || [])
 } catch (e) {
   console.error(e)
