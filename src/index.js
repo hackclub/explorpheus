@@ -660,7 +660,7 @@ console.log(`Found `, payouts)
       const payoutsForUser = payoutsByUser[user] || [];
       const dbUser = await keyv.get(`user_`+user) || {};
       // get the total amount
-      const totalAmount = payoutsForUser.reduce((acc, payout) => acc + payout.amount, 0);
+      const totalAmount = payoutsForUser.reduce((acc, payout) => parseInt(acc) + parseInt(payout.amount), 0);
       const newPayouts = payoutsForUser.filter(d => {
         return !dbUser.payouts || !dbUser.payouts.some(p => p.id === d.id);
       })
@@ -669,7 +669,7 @@ console.log(`Found `, payouts)
         for(const pay of newPayouts) {
       // send them to channel or user or something idk
       const channels_to_share_to = dbUser.channels_to_share_to || [];
-      const formated_string = `${getEmoji(pay.payable_type)} ${pay.amount > 0 ? "+" : "-"}${pay.amount} :shells: were ${pay.amount > 0 ? "added" : "subtracted"}, user balance now totaling *${totalAmount}* :shells: (${totalAmount - pay.amount} -> ${totalAmount})`;
+      const formated_string = `${getEmoji(pay.payable_type)} ${pay.amount > 0 ? "+" : "-"}${pay.amount} :shells: were ${pay.amount > 0 ? "added" : "subtracted"}, user balance now totaling *${totalAmount}* :shells: (${totalAmount - parseInt(pay.amount)} -> ${totalAmount})`;
       for(const channel of channels_to_share_to) {
         try {
           await client.chat.postMessage({
