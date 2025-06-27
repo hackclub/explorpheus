@@ -528,10 +528,15 @@ try {
   const users = await keyv.getMany(users_list.map(d=>`user_`+d))
 res.json((users || []).map(d=>{
   return {
-    amount: d.amount,
-    created_at: d.created_at,
-    id: d.id,
-    payable_type: d.payable_type
+    ...d,
+    payouts: d.payouts.map(dd => {
+      return  {
+    amount: dd.amount,
+    created_at: dd.created_at,
+    id: dd.id,
+    payable_type: dd.payable_type
+  }
+    })
   }
 }))
 } catch (e) {
@@ -703,7 +708,13 @@ console.log(`Found `, payouts)
 
 async function updatePayoutsLoop() {
   console.log("====== Starting payouts update loop ====");
+try {
   await queryPayoutsAndUpdateThemUsers();
+} catch (e) {
+  console.error("Error in payouts update loop:", e);
+  // retry after 5 minutes
+  console.error("Retrying in 5 minutes...");
+}
   await new Promise((r) => setTimeout(r, 1000 * 60 * 5)); // wait 5 minute
   console.log("====== [E] Starting payouts update loop ====");
   updatePayoutsLoop();
