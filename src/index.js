@@ -621,7 +621,16 @@ async function queryPayoutsAndUpdateThemUsers() {
     const users_list = await keyv.get("users_list") || [];
     if(users_list.length === 0) return console.log("No users to query payouts for");
     const placeholders = users_list.map((_, i) => `$${i + 1}`).join(', ');
-    const payouts = await new Promise((r,e) => sompg.query(`SELECT * FROM "payouts" WHERE "user_id" IN (${placeholders})`,(_ee, d) =>  r(d.rows)))
+    const payouts = await new Promise((resolve, reject) => {
+  sompg.query(
+    `SELECT * FROM "payouts" WHERE "user_id" IN (${placeholders})`,
+    users_list,
+    (err, result) => {
+      if (err) return reject(err);
+      resolve(result.rows);
+    }
+  );
+});
     // sort payouts into user groups now
     const payoutsByUser = {};
     for(const payout of payouts) {
