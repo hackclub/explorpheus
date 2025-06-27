@@ -526,7 +526,14 @@ app.get('/leaderboard', async (req,res) => {
 try {
     const users_list = await keyv.get("users_list") || [];
   const users = await keyv.getMany(users_list.map(d=>`user_`+d))
-res.json(users || [])
+res.json((users || []).map(d=>{
+  return {
+    amount: d.amount,
+    created_at: d.created_at,
+    id: d.id,
+    payable_type: d.payable_type
+  }
+}))
 } catch (e) {
   console.error(e)
   res.status(500).json({
