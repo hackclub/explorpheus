@@ -284,9 +284,11 @@ aclient.event("app_home_opened", async ({ event, context }) => {
     "U0810GB0HE3",
     "U082DPCGPST",
     "U08B2HD1JNA",
+    "U082GTRTR5X"
   ];
   // TODO: add, view actvly added users, option to re sent magic url, option to upgrade user
   if (allowed_user_ids.includes(event.user)) {
+    const user_lb_count = await keyv.get(`users_list`) || [];
     aclient.client.views.publish({
       user_id: event.user, // the user ID of the user whose home tab is being opened
       view: {
@@ -303,7 +305,7 @@ aclient.event("app_home_opened", async ({ event, context }) => {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `Stats:\n*Users joined*: ${users_joined} (% of valid: ${((users_joined_but_valid / users_joined) * 100).toFixed(2)}%) (last time event fired: ${new Date(user_last_joined_at).toString()} )\n*Users joined but valid*: ${users_joined_but_valid} (users who clicked button: ${((button_clicks / users_joined_but_valid) * 100).toFixed(2)}%) (last valid one at: ${new Date(user_last_joined_at_confirmed).toString()}) \n*Upgrade endpoint hit count*: ${upgrade_endpoint_hit_count} (valid percent: ${((upgraded_users / upgrade_endpoint_hit_count) * 100).toFixed(2)}) (last time endpoint hit: ${new Date(user_upgrade_endpoint_last_hit).toString()}) \n*Upgraded users*: ${upgraded_users} (last hit: ${new Date(user_last_upgraded_at).toString()})\n*Button clicks*: ${button_clicks} (last time button clicked: ${new Date(button_clicks).toString()})\n*Try agains*: ${try_agains} (last time tried again: ${new Date(last_tried_agained).toString()})\n*Last retry looped at*: ${new Date(Date.now()).toString()}`,
+              text: `Stats:\n*Users joined*: ${users_joined} (% of valid: ${((users_joined_but_valid / users_joined) * 100).toFixed(2)}%) (last time event fired: ${new Date(user_last_joined_at).toString()} )\n*Users joined but valid*: ${users_joined_but_valid} (users who clicked button: ${((button_clicks / users_joined_but_valid) * 100).toFixed(2)}%) (last valid one at: ${new Date(user_last_joined_at_confirmed).toString()}) \n*Upgrade endpoint hit count*: ${upgrade_endpoint_hit_count} (valid percent: ${((upgraded_users / upgrade_endpoint_hit_count) * 100).toFixed(2)}) (last time endpoint hit: ${new Date(user_upgrade_endpoint_last_hit).toString()}) \n*Upgraded users*: ${upgraded_users} (last hit: ${new Date(user_last_upgraded_at).toString()})\n*Button clicks*: ${button_clicks} (last time button clicked: ${new Date(button_clicks).toString()})\n*Try agains*: ${try_agains} (last time tried again: ${new Date(last_tried_agained).toString()})\n*Last retry looped at*: ${new Date(Date.now()).toString()}\n Users opted in to lb: ${user_lb_count.length} `,
             },
           },
           {
@@ -328,6 +330,16 @@ aclient.event("app_home_opened", async ({ event, context }) => {
                 },
                 value: "check_user",
                 action_id: "check_user",
+              },
+                            {
+                type: "button",
+                text: {
+                  type: "plain_text",
+                  text: "Run payouts cache",
+                  emoji: true,
+                },
+                value: "run_payouts_cache",
+                action_id: "run_payouts_cache",
               },
             ],
           },
@@ -484,6 +496,21 @@ aclient.view("check_user", async ({ ack, body, view, context }) => {
     console.error(error);
   }
 });
+aclient.action("run_payouts_cache", async ({ body, ack, view, context }) => {
+  await ack();
+  // open modal
+await queryPayoutsAndUpdateThemUsers();
+  await aclient.client.chat.postMessage({
+    channel: body.user.id,
+    text: `Payouts cache has been updated!`,
+  })
+  // log this 
+  await aclient.client.chat.postMessage({
+    channel: `C091XDSB68G`,
+    text: `Payouts cache has been updated! (_manually by <@${body.user.id}>_)`,
+  })
+});
+
 
 aclient.action("check_user", async ({ body, ack, view, context }) => {
   await ack();
@@ -527,6 +554,7 @@ try {
     const users_list = await keyv.get("users_list") || [];
   const users = await keyv.getMany(users_list.map(d=>`user_`+d))
 res.json((users || []).map(d=>{
+  delete d.channels_to_share_to;
   return {
     ...d,
     payouts: d.payouts.map(dd => {
@@ -592,7 +620,7 @@ aclient.command('/som-watch-my-balance', async ({ command, ack, respond }) => {
   }
   respond({
     response_type: 'ephemeral',
-    text: ":done: Congrats you have opted-in! Ill be dming you all your payouts soon!"
+    text: ":done: Congrats you have opted-in! Ill be dming you all your payouts soon! if you want to share payouts in your personal channel run /som-add-channel in that channel to add it!"
   })
 })
 aclient.command('/som-add-channel', async ({ command, ack, respond }) => {
@@ -712,10 +740,10 @@ try {
   await queryPayoutsAndUpdateThemUsers();
 } catch (e) {
   console.error("Error in payouts update loop:", e);
-  // retry after 5 minutes
-  console.error("Retrying in 5 minutes...");
+  // retry after 3 minutes
+  console.error("Retrying in 3 minutes...");
 }
-  await new Promise((r) => setTimeout(r, 1000 * 60 * 5)); // wait 5 minute
+  await new Promise((r) => setTimeout(r, 1000 * 60 * 3)); // wait 3 minute
   console.log("====== [E] Starting payouts update loop ====");
   updatePayoutsLoop();
 }
