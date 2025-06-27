@@ -8,6 +8,15 @@ import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
 import JSONDb from "simple-json-db";
 import expressStatusMonitor from "express-status-monitor";
+import Keyv from "keyv"
+import KeyvPostgres from "@keyv/postgres";
+import { Pool } from "pg";
+
+const keyv = new Keyv( new KeyvPostgres(process.env.PG_CONNECTION_STRING));
+const sompg = new Pool({
+    connectionString: process.env.PG_CONNECTION_STRING_SOM,
+    });
+
 import envSchema from "./env.js";
 const db = new JSONDb("./db.json");
 let try_again = db.get("try_again") || [];
@@ -65,6 +74,12 @@ app.use(
         protocol: "https",
         host: "explorpheus.hackclub.com",
         path: "/healthcheck",
+        port: "443",
+      },
+       {
+        protocol: "https",
+        host: "explorpheus.hackclub.com",
+        path: "/",
         port: "443",
       },
     ],
@@ -127,11 +142,13 @@ async function sendQueueMessage() {
       .then((d) => console.log("Updated records", d));
   }
 }
-app.get("/healthcheck", (req, res) => {
+app.get("/healthcheck", async  (req, res) => {
   // example db query  (yes ik its a json db ;-;)
   db.set("1", 2);
   let is_fully_ok = false;
   let is_db_ok = false;
+  let is_my_db_ok = false;
+  let is_som_db_ok = false;
   try {
     is_db_ok = db.get("1") === 2;
     if (is_db_ok) {
@@ -140,15 +157,33 @@ app.get("/healthcheck", (req, res) => {
   } catch (e) {
     console.error("DB error", e);
   }
+  try {
+    await keyv.set("test_key", "test_value");
+    is_my_db_ok = true;
+    if(!is_fully_ok) is_fully_ok = true;
+  } catch (e) {
+    console.error("Keyv error", e);
+    is_fully_ok = false;
+    is_my_db_ok = false;
+  }
+  try {
+    await sompg.query("SELECT 1");
+    is_som_db_ok = true;
+    if(!is_fully_ok) is_fully_ok = true;
+  } catch (e) {
+    console.error("SOM DB error", e);
+    is_som_db_ok = false;
+    is_fully_ok = false;
+  }
   let is_up = true;
   if (is_fully_ok) {
     res
       .status(200)
-      .json({ is_up, is_db_ok, is_fully_ok, airtable_under_press });
+      .json({ is_up, is_db_ok, is_fully_ok, airtable_under_press, is_db_ok, is_som_db_ok });
   } else {
     res
       .status(500)
-      .json({ is_up, is_db_ok, is_fully_ok, airtable_under_press });
+      .json({ is_up, is_db_ok, is_fully_ok, airtable_under_press,  is_db_ok, is_som_db_ok });
   }
 });
 app.post("/content", async (req, res) => {
