@@ -17,4 +17,7 @@ export default  z
     DOMAIN_OF_HOST: z.string(),
     GARDENS_URL: z.string().optional(),
     BANNED_USERS: z.string(),
+    PG_CONNECTION_STRING: z.string(),
+    PG_CONNECTION_STRING_SOM: z.string(),
+    SOM_COOKIE: z.string()
   })

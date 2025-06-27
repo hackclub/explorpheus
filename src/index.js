@@ -522,6 +522,167 @@ aclient.action("check_user", async ({ body, ack, view, context }) => {
 aclient.start(process.env.PORT).then(() => {
   console.log(`uppies`);
 });
+app.get('/leaderboard', async (req,res) => {
+try {
+    const users_list = await keyv.get("users_list") || [];
+  const users = await keyv.getMany(users_list)
+res.json(users || [])
+} catch (e) {
+  console.error(e)
+  res.status(500).json({
+    error: "Failed to fetch leaderboard",
+  })
+}
+})
+function getEmoji(type) {
+  switch (type) {
+    case "User":
+      return "🎁"
+    case "ShopOrder":
+      return "🛒"
+    default:
+      return `:x: ${type} :x:`;
+  }
+}
+aclient.command('/som-watch-my-balance', async ({ command, ack, respond }) => {
+  await ack();
+  // check if user is already in the list
+  const userId = command.user_id;
+  const slackUserDbEntry = await keyv.get(`user_` + userId) || {};
+  if(slackUserDbEntry !== undefined) {
+    return respond({
+      response_type: 'ephemeral',
+      text: `:x: You already have setup this! If you want to Opt Out dm @Neon !`
+    })
+  }
+  // get users SOM id
+  const somId = await sompg.query(`SELECT id from "users" WHERE "slack_id" = $1`, [userId])
+  if(somId.rows.length === 0) {
+    return respond({
+      response_type: 'ephemeral',
+      text: `:x: You are not on the SOM platform! Please join it first!`
+    })
+  }
+  const somUserId = somId.rows[0].id;
+  // setup DB 
+  await keyv.set(`user_`+ somUserId, {
+    slack_id: userId,
+    payouts: [],
+    channels_to_share_to: [command.user_id],
+    shells: 0, // yea they are starting from 0 
+  })
+  await keyv.set(`user_` + userId, somUserId)
+  // add user to users_list
+  let users_list = await keyv.get("users_list") || [];
+  if(!users_list.includes(somUserId)) {
+    users_list.push(somUserId);
+    await keyv.set("users_list", users_list);
+  }
+  respond({
+    response_type: 'ephemeral',
+    text: ":done: Congrats you have opted-in! Ill be dming you all your payouts soon!"
+  })
+})
+aclient.command('/som-add-channel', async ({ command, ack, respond }) => {
+  await ack()
+  const slackRef = await keyv.get(`user_` + command.user_id) || {};
+  if(slackRef == undefined) {
+    return respond({
+      response_type: 'ephemeral',
+      text: `:x: You are not on the SOM platform! Please join it first!`
+    })
+  }
+  // get som Data Refrence
+  const somDbRef = await keyv.get(`user_` + slackRef) || {};
+  if(somDbRef == undefined) {
+    return respond({
+      response_type: 'ephemeral',
+      text: `:x: You are not on the SOM platform! Please join it first! (bork moment)`
+    })
+  }
+  somDbRef.channels_to_share_to = somDbRef.channels_to_share_to || [];
+  // check if channel is already in the list
+  if(somDbRef.channels_to_share_to.includes(command.channel_id)) {
+    return respond({
+      response_type: 'ephemeral',
+      text: `:x: This channel is already in the list!`
+    })
+  }
+  // add channel to the list
+  somDbRef.channels_to_share_to.push(command.channel_id.replaceAll("<#", "").replaceAll(">", ""));
+  await keyv.set(`user_` + slackRef, somDbRef);
+  respond({
+    response_type: 'ephemeral',
+    text: `:done: Channel <#${command.channel_id}> has been added to the list!`
+  })
+})
+async function queryPayoutsAndUpdateThemUsers() {
+  try {
+    const users_list = await keyv.get("users_list") || [];
+    const placeholders = users_list.map((_, i) => `$${i + 1}`).join(', ');
+    const payouts = await new Promise((r,e) => sompg.query(`SELECT * FROM "payouts" WHERE "user_id" IN (${placeholders})`).then(d=>d.rows))
+    // sort payouts into user groups now
+    const payoutsByUser = {};
+    for(const payout of payouts) {
+      payoutsByUser[payout.user_id] = payoutsByUser[payout.user_id] || [];
+      payoutsByUser[payout.user_id].push(payout);
+    }
+    // now for each user! (WHY)
+    for(const user of users_list) {
+      const payoutsForUser = payoutsByUser[user] || [];
+      const dbUser = await keyv.get(`user_`+user) || {};
+      // get the total amount
+      const totalAmount = payoutsForUser.reduce((acc, payout) => acc + payout.amount, 0);
+      const newPayouts = payoutsForUser.filter(d => {
+        return !dbUser.payouts || !dbUser.payouts.some(p => p.id === d.id);
+      })
+
+      if(newPayouts.length > 0) {
+        for(const pay of newPayouts) {
+      // send them to channel or user or something idk
+      const channels_to_share_to = dbUser.channels_to_share_to || [];
+      const formated_string = `${getEmoji(pay.payable_type)} ${pay.amount > 0 ? "+" : "-"}${pay.amount} :shells: were ${pay.amount > 0 ? "added" : "subtracted"}, user balance now totaling *${totalAmount}* :shells: (${totalAmount - pay.amount} -> ${totalAmount})`;
+      for(const channel of channels_to_share_to) {
+        try {
+          await client.chat.postMessage({
+            channel: channel,
+            text: formated_string,
+          });
+        } catch (e) {
+          console.error(`Failed to send payout message to channel ${channel}:`, e);
+        } finally {
+          await new Promise(r=>setTimeout(r,500))
+        }
+      }
+      await new Promise(r=>setTimeout(r, 100));
+    }
+  }
+      // update the user in keyv
+      await keyv.set(`user_`+user, {
+        ...dbUser,
+        shells: totalAmount,
+        payouts: payoutsForUser.filter(d=> {
+          return {
+            type: d.payable_type,
+            id: d.id,
+            amount: d.amount,
+            created_at: d.created_at
+          }
+        })
+      });
+    
+    }
+  } catch (e) {
+    console.error("Failed to query payouts:", e);
+    new Promise(r=>setTimeout(r, 1000))
+  }
+}
+
+async function updatePayoutsLoop() {
+  await queryPayoutsAndUpdateThemUsers();
+  await new Promise((r) => setTimeout(r, 1000 * 60 * 5)); // wait 5 minutes
+  updatePayoutsLoop();
+}
 
 async function reTryLoop() {
   const found = [];
@@ -564,3 +725,4 @@ async function retryLooped() {
 retryLooped();
 // magic-url
 sendQueueMessage();
+updatePayoutsLoop()
