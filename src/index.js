@@ -548,7 +548,7 @@ aclient.command('/som-watch-my-balance', async ({ command, ack, respond }) => {
   await ack();
   // check if user is already in the list
   const userId = command.user_id;
-  const slackUserDbEntry = await keyv.get(`user_` + userId) || {};
+  const slackUserDbEntry = await keyv.get(`user_` + userId);
   if(slackUserDbEntry !== undefined) {
     return respond({
       response_type: 'ephemeral',
@@ -585,7 +585,7 @@ aclient.command('/som-watch-my-balance', async ({ command, ack, respond }) => {
 })
 aclient.command('/som-add-channel', async ({ command, ack, respond }) => {
   await ack()
-  const slackRef = await keyv.get(`user_` + command.user_id) || {};
+  const slackRef = await keyv.get(`user_` + command.user_id);
   if(slackRef == undefined) {
     return respond({
       response_type: 'ephemeral',
