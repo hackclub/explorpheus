@@ -619,8 +619,9 @@ aclient.command('/som-add-channel', async ({ command, ack, respond }) => {
 async function queryPayoutsAndUpdateThemUsers() {
   try {
     const users_list = await keyv.get("users_list") || [];
+    if(users_list.length === 0) return console.log("No users to query payouts for");
     const placeholders = users_list.map((_, i) => `$${i + 1}`).join(', ');
-    const payouts = await new Promise((r,e) => sompg.query(`SELECT * FROM "payouts" WHERE "user_id" IN (${placeholders})`).then(d=>d.rows))
+    const payouts = await new Promise((r,e) => sompg.query(`SELECT * FROM "payouts" WHERE "user_id" IN (${placeholders})`,(_ee, d) =>  r(d.rows)))
     // sort payouts into user groups now
     const payoutsByUser = {};
     for(const payout of payouts) {
