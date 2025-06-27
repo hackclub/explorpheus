@@ -21,7 +21,7 @@ export async function handleMCGInvite(client, env, user, alreadyCheckedEmails) {
       !userProfile.user.is_ultra_restricted) ||
     BANNED_USERS.includes(user)
   ) {
-    console.log(`User ${user} is already a full user– or banned. skipping`);
+    // console.log(`User ${user} is already a full user– or banned. skipping`);
     alreadyCheckedEmails.push(user);
     return false;
   }

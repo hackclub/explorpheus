@@ -689,9 +689,13 @@ async function queryPayoutsAndUpdateThemUsers() {
 }
 
 async function updatePayoutsLoop() {
+  console.log("====== Starting payouts update loop ====");
   await queryPayoutsAndUpdateThemUsers();
-  await new Promise((r) => setTimeout(r, 1000 * 60 * 5)); // wait 5 minutes
+  await new Promise((r) => setTimeout(r, 1000 * 60 * 1)); // wait 1 minute
+  console.log("====== [E] Starting payouts update loop ====");
+  
   updatePayoutsLoop();
+
 }
 
 async function reTryLoop() {
