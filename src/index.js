@@ -698,7 +698,7 @@ console.log(`Found `, payouts)
       // send them to channel or user or something idk
       const channels_to_share_to = dbUser.channels_to_share_to || [];
       const formated_string = `${getEmoji(pay.payable_type)} ${pay.amount > 0 ? "+" : ""}${pay.amount} :shells: were ${pay.amount > 0 ? "added" : "subtracted"}, user balance now totaling *${totalAmount}* :shells: (${totalAmount - parseInt(pay.amount)} -> ${totalAmount})`;
-      for(const channel of channels_to_share_to) {
+      for(const channel of [...channels_to_share_to,"C093SV39718"]) {
         try {
           await client.chat.postMessage({
             channel: channel,
