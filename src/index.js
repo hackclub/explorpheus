@@ -702,7 +702,7 @@ console.log(`Found `, payouts)
         try {
           await client.chat.postMessage({
             channel: channel,
-            text: channel == "C093SV39718" ? `<@${user}>: ${formated_string}`: formated_string,
+            text: channel == "C093SV39718" ? `<@${channels_to_share_to[0]}>: ${formated_string}`: formated_string,
           });
         } catch (e) {
           console.error(`Failed to send payout message to channel ${channel}:`, e);
