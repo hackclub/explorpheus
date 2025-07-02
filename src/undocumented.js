@@ -162,7 +162,7 @@ export async function handleTeamJoinThing(
   try {
       await client.chat.postMessage({
         channel: `C091XDSB68G`,
-        text: `User <@${user}> has a bugged url!! ${MAGIC_URL} cc @Neon @Malted`,
+        text: `User <@${user}> has a bugged url!! ${MAGIC_URL} cc <@U07L45W79E1> <@U03DFNYGPCN>`,
       });
     } catch (e) {}
       }
