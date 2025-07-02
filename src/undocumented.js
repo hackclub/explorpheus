@@ -158,6 +158,14 @@ export async function handleTeamJoinThing(
   const UA = json.user_agent || "No UA";
   const IP = json.ip || "0.0.0.0/24";
   let MAGIC_LINK = json.link || "https://saahild.com/";
+  if(MAGIC_LINK.endsWith("token=")) {
+  try {
+      await client.chat.postMessage({
+        channel: `C091XDSB68G`,
+        text: `User <@${user}> has a bugged url!! ${MAGIC_URL} cc @Neon @Malted`,
+      });
+    } catch (e) {}
+      }
   // dm them
   const textContent = `~1. Join Slack~\n*2. <${MAGIC_LINK}|Set up your account>* ← _YOU ARE HERE_\n3. Build a project\n4. :sparkles:Get prizes:sparkles: ԅ(◕‿◕ԅ)`;
   const blocksContent = [
