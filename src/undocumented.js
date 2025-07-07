@@ -76,7 +76,7 @@ export async function handleMCGInvite(client, env, user, alreadyCheckedEmails) {
   uptimeSanityCheck(client, env, user);
   return true;
 }
-async function inviteToChannels(client, user) {
+export async function inviteToChannels(client, user) {
   for (const channel of CHANNELS_TO_INVITE) {
     try {
       const res = await client.conversations.invite({
@@ -158,7 +158,7 @@ export async function handleTeamJoinThing(
   const UA = json.user_agent || "No UA";
   const IP = json.ip || "0.0.0.0/24";
   let MAGIC_LINK = json.link || "https://saahild.com/";
-  if(MAGIC_LINK.endsWith("token=")) {
+  if(MAGIC_LINK== ("https://summer.hackclub.com/magic-link?token=") || MAGIC_LINK == "https://saahild.com/") {
   try {
       await client.chat.postMessage({
         channel: `C091XDSB68G`,
