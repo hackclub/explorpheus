@@ -15,5 +15,8 @@
     "pg": "^8.16.2",
     "simple-json-db": "^2.0.0",
     "zod": "^3.25.51"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
   }
 }

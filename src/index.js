@@ -8,21 +8,20 @@ import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
 import JSONDb from "simple-json-db";
 import expressStatusMonitor from "express-status-monitor";
-import Keyv from "keyv"
+import Keyv from "keyv";
 import KeyvPostgres from "@keyv/postgres";
 import { Pool } from "pg";
 
-const keyv = new Keyv( new KeyvPostgres(process.env.PG_CONNECTION_STRING));
+const keyv = new Keyv(new KeyvPostgres(process.env.PG_CONNECTION_STRING));
 const sompg = new Pool({
-    connectionString: process.env.PG_CONNECTION_STRING_SOM,
-    });
+  connectionString: process.env.PG_CONNECTION_STRING_SOM,
+});
 
 import envSchema from "./env.js";
 const db = new JSONDb("./db.json");
 let try_again = db.get("try_again") || [];
 let alreadyCheckedEmails = [];
-let env0 = envSchema
-  .safeParse(process.env);
+let env0 = envSchema.safeParse(process.env);
 if (env0.error) {
   throw env0.error;
 }
@@ -43,7 +42,7 @@ let last_tried_agained = Date.now();
 // end stat vars
 const receiver = new App.default.ExpressReceiver({
   signingSecret: env.SLACK_SIGNING_SECRET,
-  endpoints: "/slack/events", 
+  endpoints: "/slack/events",
 });
 let airtable_under_press = false;
 let join_requests_currently = 0;
@@ -76,7 +75,7 @@ app.use(
         path: "/healthcheck",
         port: "443",
       },
-       {
+      {
         protocol: "https",
         host: "explorpheus.hackclub.com",
         path: "/",
@@ -142,7 +141,7 @@ async function sendQueueMessage() {
       .then((d) => console.log("Updated records", d));
   }
 }
-app.get("/healthcheck", async  (req, res) => {
+app.get("/healthcheck", async (req, res) => {
   // example db query  (yes ik its a json db ;-;)
   db.set("1", 2);
   let is_fully_ok = false;
@@ -160,7 +159,7 @@ app.get("/healthcheck", async  (req, res) => {
   try {
     await keyv.set("test_key", "test_value");
     is_my_db_ok = true;
-    if(!is_fully_ok) is_fully_ok = true;
+    if (!is_fully_ok) is_fully_ok = true;
   } catch (e) {
     console.error("Keyv error", e);
     is_fully_ok = false;
@@ -169,7 +168,7 @@ app.get("/healthcheck", async  (req, res) => {
   try {
     await sompg.query("SELECT 1");
     is_som_db_ok = true;
-    if(!is_fully_ok) is_fully_ok = true;
+    if (!is_fully_ok) is_fully_ok = true;
   } catch (e) {
     console.error("SOM DB error", e);
     is_som_db_ok = false;
@@ -179,11 +178,25 @@ app.get("/healthcheck", async  (req, res) => {
   if (is_fully_ok) {
     res
       .status(200)
-      .json({ is_up, is_db_ok, is_fully_ok, airtable_under_press, is_db_ok, is_som_db_ok });
+      .json({
+        is_up,
+        is_db_ok,
+        is_fully_ok,
+        airtable_under_press,
+        is_db_ok,
+        is_som_db_ok,
+      });
   } else {
     res
       .status(500)
-      .json({ is_up, is_db_ok, is_fully_ok, airtable_under_press,  is_db_ok, is_som_db_ok });
+      .json({
+        is_up,
+        is_db_ok,
+        is_fully_ok,
+        airtable_under_press,
+        is_db_ok,
+        is_som_db_ok,
+      });
   }
 });
 app.post("/content", async (req, res) => {
@@ -284,11 +297,11 @@ aclient.event("app_home_opened", async ({ event, context }) => {
     "U0810GB0HE3",
     "U082DPCGPST",
     "U08B2HD1JNA",
-    "U082GTRTR5X"
+    "U082GTRTR5X",
   ];
   // TODO: add, view actvly added users, option to re sent magic url, option to upgrade user
   if (allowed_user_ids.includes(event.user)) {
-    const user_lb_count = await keyv.get(`users_list`) || [];
+    const user_lb_count = (await keyv.get(`users_list`)) || [];
     aclient.client.views.publish({
       user_id: event.user, // the user ID of the user whose home tab is being opened
       view: {
@@ -331,7 +344,7 @@ aclient.event("app_home_opened", async ({ event, context }) => {
                 value: "check_user",
                 action_id: "check_user",
               },
-                            {
+              {
                 type: "button",
                 text: {
                   type: "plain_text",
@@ -499,18 +512,17 @@ aclient.view("check_user", async ({ ack, body, view, context }) => {
 aclient.action("run_payouts_cache", async ({ body, ack, view, context }) => {
   await ack();
   // open modal
-await queryPayoutsAndUpdateThemUsers();
+  await queryPayoutsAndUpdateThemUsers();
   await aclient.client.chat.postMessage({
     channel: body.user.id,
     text: `Payouts cache has been updated!`,
-  })
-  // log this 
+  });
+  // log this
   await aclient.client.chat.postMessage({
     channel: `C091XDSB68G`,
     text: `Payouts cache has been updated! (_manually by <@${body.user.id}>_)`,
-  })
+  });
 });
-
 
 aclient.action("check_user", async ({ body, ack, view, context }) => {
   await ack();
@@ -549,200 +561,215 @@ aclient.action("check_user", async ({ body, ack, view, context }) => {
 aclient.start(process.env.PORT).then(() => {
   console.log(`uppies`);
 });
-app.get('/leaderboard', async (req,res) => {
-try {
-    const users_list = await keyv.get("users_list") || [];
-  const users = await keyv.getMany(users_list.map(d=>`user_`+d))
-res.json((users || []).map(d=>{
-  delete d.channels_to_share_to;
-  return {
-    ...d,
-    payouts: d.payouts.map(dd => {
-      return  {
-    amount: dd.amount,
-    created_at: dd.created_at,
-    id: dd.id,
-    payable_type: dd.payable_type
+app.get("/leaderboard", async (req, res) => {
+  try {
+    const users_list = (await keyv.get("users_list")) || [];
+    const users = await keyv.getMany(users_list.map((d) => `user_` + d));
+    res.json(
+      (users || []).map((d) => {
+        delete d.channels_to_share_to;
+        return {
+          ...d,
+          payouts: d.payouts.map((dd) => {
+            return {
+              amount: dd.amount,
+              created_at: dd.created_at,
+              id: dd.id,
+              payable_type: dd.payable_type,
+            };
+          }),
+        };
+      }),
+    );
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      error: "Failed to fetch leaderboard",
+    });
   }
-    })
-  }
-}))
-} catch (e) {
-  console.error(e)
-  res.status(500).json({
-    error: "Failed to fetch leaderboard",
-  })
-}
-})
+});
 function getEmoji(type) {
   switch (type) {
     case "User":
-      return "🎁"
+      return "🎁";
     case "ShopOrder":
-      return "🛒"
+      return "🛒";
     default:
       return `:x: ${type} :x:`;
   }
 }
-aclient.command('/som-watch-my-balance', async ({ command, ack, respond }) => {
+aclient.command("/som-watch-my-balance", async ({ command, ack, respond }) => {
   await ack();
   // check if user is already in the list
   const userId = command.user_id;
   const slackUserDbEntry = await keyv.get(`user_` + userId);
-  if(slackUserDbEntry !== undefined) {
+  if (slackUserDbEntry !== undefined) {
     return respond({
-      response_type: 'ephemeral',
-      text: `:x: You already have setup this! If you want to Opt Out dm @Neon !`
-    })
+      response_type: "ephemeral",
+      text: `:x: You already have setup this! If you want to Opt Out dm @Neon !`,
+    });
   }
   // get users SOM id
-  const somId = await sompg.query(`SELECT id from "users" WHERE "slack_id" = $1`, [userId])
-  if(somId.rows.length === 0) {
+  const somId = await sompg.query(
+    `SELECT id from "users" WHERE "slack_id" = $1`,
+    [userId],
+  );
+  if (somId.rows.length === 0) {
     return respond({
-      response_type: 'ephemeral',
-      text: `:x: You are not on the SOM platform! Please join it first!`
-    })
+      response_type: "ephemeral",
+      text: `:x: You are not on the SOM platform! Please join it first!`,
+    });
   }
   const somUserId = somId.rows[0].id;
-  // setup DB 
-  await keyv.set(`user_`+ somUserId, {
+  // setup DB
+  await keyv.set(`user_` + somUserId, {
     slack_id: userId,
     payouts: [],
     channels_to_share_to: [command.user_id],
-    shells: 0, // yea they are starting from 0 
-  })
-  await keyv.set(`user_` + userId, somUserId)
+    shells: 0, // yea they are starting from 0
+  });
+  await keyv.set(`user_` + userId, somUserId);
   // add user to users_list
-  let users_list = await keyv.get("users_list") || [];
-  if(!users_list.includes(somUserId)) {
+  let users_list = (await keyv.get("users_list")) || [];
+  if (!users_list.includes(somUserId)) {
     users_list.push(somUserId);
     await keyv.set("users_list", users_list);
   }
   respond({
-    response_type: 'ephemeral',
-    text: ":done: Congrats you have opted-in! Ill be dming you all your payouts soon! if you want to share payouts in your personal channel run /som-add-channel in that channel to add it!"
-  })
-})
-aclient.command('/som-add-channel', async ({ command, ack, respond }) => {
-  await ack()
+    response_type: "ephemeral",
+    text: ":done: Congrats you have opted-in! Ill be dming you all your payouts soon! if you want to share payouts in your personal channel run /som-add-channel in that channel to add it!",
+  });
+});
+aclient.command("/som-add-channel", async ({ command, ack, respond }) => {
+  await ack();
   const slackRef = await keyv.get(`user_` + command.user_id);
-  const channel_id = command.text.trim() || command.channel_id
-  if(slackRef == undefined) {
+  const channel_id = command.text.trim() || command.channel_id;
+  if (slackRef == undefined) {
     return respond({
-      response_type: 'ephemeral',
-      text: `:x: You are not on the SOM platform! Please join it first!`
-    })
+      response_type: "ephemeral",
+      text: `:x: You are not on the SOM platform! Please join it first!`,
+    });
   }
   // get som Data Refrence
-  const somDbRef = await keyv.get(`user_` + slackRef) || {};
-  if(somDbRef == undefined) {
+  const somDbRef = (await keyv.get(`user_` + slackRef)) || {};
+  if (somDbRef == undefined) {
     return respond({
-      response_type: 'ephemeral',
-      text: `:x: You are not on the SOM platform! Please join it first! (bork moment)`
-    })
+      response_type: "ephemeral",
+      text: `:x: You are not on the SOM platform! Please join it first! (bork moment)`,
+    });
   }
   somDbRef.channels_to_share_to = somDbRef.channels_to_share_to || [];
   // check if channel is already in the list
-  if(somDbRef.channels_to_share_to.includes(channel_id)) {
+  if (somDbRef.channels_to_share_to.includes(channel_id)) {
     return respond({
-      response_type: 'ephemeral',
-      text: `:x: This channel is already in the list!`
-    })
+      response_type: "ephemeral",
+      text: `:x: This channel is already in the list!`,
+    });
   }
   // add channel to the list
-  somDbRef.channels_to_share_to.push(channel_id.replaceAll("<#", "").replaceAll(">", ""));
+  somDbRef.channels_to_share_to.push(
+    channel_id.replaceAll("<#", "").replaceAll(">", ""),
+  );
   await keyv.set(`user_` + slackRef, somDbRef);
   respond({
-    response_type: 'ephemeral',
-    text: `:done: Channel <#${channel_id.replace("<#", "").replace(">", '')}> has been added to the list!`
-  })
-})
+    response_type: "ephemeral",
+    text: `:done: Channel <#${channel_id.replace("<#", "").replace(">", "")}> has been added to the list!`,
+  });
+});
 async function queryPayoutsAndUpdateThemUsers() {
   try {
-    console.log(`Starting`)
-    const users_list = await keyv.get("users_list") || [];
-    if(users_list.length === 0) return console.log("No users to query payouts for");
-    const placeholders = users_list.map((_, i) => `$${i + 1}`).join(', ');
-console.log(0)
+    console.log(`Starting`);
+    const users_list = (await keyv.get("users_list")) || [];
+    if (users_list.length === 0)
+      return console.log("No users to query payouts for");
+    const placeholders = users_list.map((_, i) => `$${i + 1}`).join(", ");
+    console.log(0);
     const payouts = await new Promise((resolve, reject) => {
-
       sompg.query(
-    `SELECT * FROM "payouts" WHERE "user_id" IN (${placeholders})`,
-    users_list,
-    (err, result) => {
-      if (err) return reject(err);
-      resolve(result.rows);
-    }
-  );
-});
-console.log(1)
-console.log(`Found `, payouts)
+        `SELECT * FROM "payouts" WHERE "user_id" IN (${placeholders})`,
+        users_list,
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result.rows);
+        },
+      );
+    });
+    console.log(1);
+    console.log(`Found `, payouts);
     // sort payouts into user groups now
     const payoutsByUser = {};
-    for(const payout of payouts) {
+    for (const payout of payouts) {
       payoutsByUser[payout.user_id] = payoutsByUser[payout.user_id] || [];
       payoutsByUser[payout.user_id].push(payout);
     }
     // now for each user! (WHY)
-    for(const user of users_list) {
+    for (const user of users_list) {
       const payoutsForUser = payoutsByUser[user] || [];
-      const dbUser = await keyv.get(`user_`+user) || {};
+      const dbUser = (await keyv.get(`user_` + user)) || {};
       // get the total amount
-      const totalAmount = payoutsForUser.reduce((acc, payout) => parseInt(acc) + parseInt(payout.amount), 0);
-      const newPayouts = payoutsForUser.filter(d => {
-        return !dbUser.payouts || !dbUser.payouts.some(p => p.id === d.id);
-      })
+      const totalAmount = payoutsForUser.reduce(
+        (acc, payout) => parseInt(acc) + parseInt(payout.amount),
+        0,
+      );
+      const newPayouts = payoutsForUser.filter((d) => {
+        return !dbUser.payouts || !dbUser.payouts.some((p) => p.id === d.id);
+      });
 
-      if(newPayouts.length > 0) {
-        for(const pay of newPayouts) {
-      // send them to channel or user or something idk
-      const channels_to_share_to = dbUser.channels_to_share_to || [];
-      const formated_string = `${getEmoji(pay.payable_type)} ${pay.amount > 0 ? "+" : ""}${pay.amount} :shells: were ${pay.amount > 0 ? "added" : "subtracted"}, user balance now totaling *${totalAmount}* :shells: (${totalAmount - parseInt(pay.amount)} -> ${totalAmount})`;
-      for(const channel of [...channels_to_share_to,"C093SV39718"]) {
-        try {
-          await client.chat.postMessage({
-            channel: channel,
-            text: channel == "C093SV39718" ? `<@${channels_to_share_to[0]}>: ${formated_string}`: formated_string,
-          });
-        } catch (e) {
-          console.error(`Failed to send payout message to channel ${channel}:`, e);
-        } finally {
-          await new Promise(r=>setTimeout(r,500))
+      if (newPayouts.length > 0) {
+        for (const pay of newPayouts) {
+          // send them to channel or user or something idk
+          const channels_to_share_to = dbUser.channels_to_share_to || [];
+          const formated_string = `${getEmoji(pay.payable_type)} ${pay.amount > 0 ? "+" : ""}${pay.amount} :shells: were ${pay.amount > 0 ? "added" : "subtracted"}, user balance now totaling *${totalAmount}* :shells: (${totalAmount - parseInt(pay.amount)} -> ${totalAmount})`;
+          for (const channel of [...channels_to_share_to, "C093SV39718"]) {
+            try {
+              await client.chat.postMessage({
+                channel: channel,
+                text:
+                  channel == "C093SV39718"
+                    ? `<@${channels_to_share_to[0]}>: ${formated_string}`
+                    : formated_string,
+              });
+            } catch (e) {
+              console.error(
+                `Failed to send payout message to channel ${channel}:`,
+                e,
+              );
+            } finally {
+              await new Promise((r) => setTimeout(r, 500));
+            }
+          }
+          await new Promise((r) => setTimeout(r, 100));
         }
       }
-      await new Promise(r=>setTimeout(r, 100));
-    }
-  }
       // update the user in keyv
-      await keyv.set(`user_`+user, {
+      await keyv.set(`user_` + user, {
         ...dbUser,
         shells: totalAmount,
-        payouts: payoutsForUser.filter(d=> {
+        payouts: payoutsForUser.filter((d) => {
           return {
             type: d.payable_type,
             id: d.id,
             amount: d.amount,
-            created_at: d.created_at
-          }
-        })
+            created_at: d.created_at,
+          };
+        }),
       });
-    
     }
   } catch (e) {
     console.error("Failed to query payouts:", e);
-    new Promise(r=>setTimeout(r, 1000))
+    new Promise((r) => setTimeout(r, 1000));
   }
 }
 
 async function updatePayoutsLoop() {
   console.log("====== Starting payouts update loop ====");
-try {
-  await queryPayoutsAndUpdateThemUsers();
-} catch (e) {
-  console.error("Error in payouts update loop:", e);
-  // retry after 3 minutes
-  console.error("Retrying in 3 minutes...");
-}
+  try {
+    await queryPayoutsAndUpdateThemUsers();
+  } catch (e) {
+    console.error("Error in payouts update loop:", e);
+    // retry after 3 minutes
+    console.error("Retrying in 3 minutes...");
+  }
   await new Promise((r) => setTimeout(r, 1000 * 60 * 3)); // wait 3 minute
   console.log("====== [E] Starting payouts update loop ====");
   updatePayoutsLoop();
@@ -789,4 +816,4 @@ async function retryLooped() {
 retryLooped();
 // magic-url
 sendQueueMessage();
-updatePayoutsLoop()
+updatePayoutsLoop();
