@@ -82,7 +82,7 @@ app.use(
         port: "443",
       },
     ],
-  }),
+  })
 );
 app.get("/", (req, res) => res.send("hi:3"));
 
@@ -91,12 +91,16 @@ async function sendQueueMessage() {
   // pull all queue messages from airtable lol
   const updateRecords = [];
   const currentRecords = await fetch(
-    `https://api.airtable.com/v0/${env.BASE_ID}/messages_to_users?filterByFormula=${encodeURIComponent("AND({Automation_-_sent_to_user} = FALSE(), {Send} = TRUE())")}`,
+    `https://api.airtable.com/v0/${
+      env.BASE_ID
+    }/messages_to_users?filterByFormula=${encodeURIComponent(
+      "AND({Automation_-_sent_to_user} = FALSE(), {Send} = TRUE())"
+    )}`,
     {
       headers: {
         Authorization: `Bearer ${env.AIRTABLE_KEY}`,
       },
-    },
+    }
   )
     .then((r) => r.json())
     .then((d) => d.records);
@@ -135,7 +139,7 @@ async function sendQueueMessage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ records: updateRecords }),
-      },
+      }
     )
       .then((r) => r.json())
       .then((d) => console.log("Updated records", d));
@@ -176,27 +180,23 @@ app.get("/healthcheck", async (req, res) => {
   }
   let is_up = true;
   if (is_fully_ok) {
-    res
-      .status(200)
-      .json({
-        is_up,
-        is_db_ok,
-        is_fully_ok,
-        airtable_under_press,
-        is_db_ok,
-        is_som_db_ok,
-      });
+    res.status(200).json({
+      is_up,
+      is_db_ok,
+      is_fully_ok,
+      airtable_under_press,
+      is_db_ok,
+      is_som_db_ok,
+    });
   } else {
-    res
-      .status(500)
-      .json({
-        is_up,
-        is_db_ok,
-        is_fully_ok,
-        airtable_under_press,
-        is_db_ok,
-        is_som_db_ok,
-      });
+    res.status(500).json({
+      is_up,
+      is_db_ok,
+      is_fully_ok,
+      airtable_under_press,
+      is_db_ok,
+      is_som_db_ok,
+    });
   }
 });
 app.post("/content", async (req, res) => {
@@ -245,7 +245,7 @@ aclient.event("team_join", async ({ event, context }) => {
       airtable,
       env,
       last_5_users,
-      event.user.id,
+      event.user.id
     );
     last_5_users = last_5_users.slice(0, 5);
     user_last_joined_at_confirmed = Date.now();
@@ -318,7 +318,30 @@ aclient.event("app_home_opened", async ({ event, context }) => {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `Stats:\n*Users joined*: ${users_joined} (% of valid: ${((users_joined_but_valid / users_joined) * 100).toFixed(2)}%) (last time event fired: ${new Date(user_last_joined_at).toString()} )\n*Users joined but valid*: ${users_joined_but_valid} (users who clicked button: ${((button_clicks / users_joined_but_valid) * 100).toFixed(2)}%) (last valid one at: ${new Date(user_last_joined_at_confirmed).toString()}) \n*Upgrade endpoint hit count*: ${upgrade_endpoint_hit_count} (valid percent: ${((upgraded_users / upgrade_endpoint_hit_count) * 100).toFixed(2)}) (last time endpoint hit: ${new Date(user_upgrade_endpoint_last_hit).toString()}) \n*Upgraded users*: ${upgraded_users} (last hit: ${new Date(user_last_upgraded_at).toString()})\n*Button clicks*: ${button_clicks} (last time button clicked: ${new Date(button_clicks).toString()})\n*Try agains*: ${try_agains} (last time tried again: ${new Date(last_tried_agained).toString()})\n*Last retry looped at*: ${new Date(Date.now()).toString()}\n Users opted in to lb: ${user_lb_count.length} `,
+              text: `Stats:\n*Users joined*: ${users_joined} (% of valid: ${(
+                (users_joined_but_valid / users_joined) *
+                100
+              ).toFixed(2)}%) (last time event fired: ${new Date(
+                user_last_joined_at
+              ).toString()} )\n*Users joined but valid*: ${users_joined_but_valid} (users who clicked button: ${(
+                (button_clicks / users_joined_but_valid) *
+                100
+              ).toFixed(2)}%) (last valid one at: ${new Date(
+                user_last_joined_at_confirmed
+              ).toString()}) \n*Upgrade endpoint hit count*: ${upgrade_endpoint_hit_count} (valid percent: ${(
+                (upgraded_users / upgrade_endpoint_hit_count) *
+                100
+              ).toFixed(2)}) (last time endpoint hit: ${new Date(
+                user_upgrade_endpoint_last_hit
+              ).toString()}) \n*Upgraded users*: ${upgraded_users} (last hit: ${new Date(
+                user_last_upgraded_at
+              ).toString()})\n*Button clicks*: ${button_clicks} (last time button clicked: ${new Date(
+                button_clicks
+              ).toString()})\n*Try agains*: ${try_agains} (last time tried again: ${new Date(
+                last_tried_agained
+              ).toString()})\n*Last retry looped at*: ${new Date(
+                Date.now()
+              ).toString()}\n Users opted in to lb: ${user_lb_count.length} `,
             },
           },
           {
@@ -364,7 +387,9 @@ aclient.event("app_home_opened", async ({ event, context }) => {
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: `<@${d.id}> - ${new Date(d.date).toString()} ${d.got_verified ? ":done:" : ":x:"}`,
+                text: `<@${d.id}> - ${new Date(d.date).toString()} ${
+                  d.got_verified ? ":done:" : ":x:"
+                }`,
               },
             };
           }),
@@ -490,20 +515,26 @@ aclient.view("check_user", async ({ ack, body, view, context }) => {
   const email = info.user.profile.email;
   try {
     const is_on_the_platform = await fetch(
-      `https://${env.DOMAIN_OF_HOST}/explorpheus/magic-link?token=${env.API_KEY}&email=${encodeURIComponent(email)}&slack_id=${slackId}`,
+      `https://${env.DOMAIN_OF_HOST}/explorpheus/magic-link?token=${
+        env.API_KEY
+      }&email=${encodeURIComponent(email)}&slack_id=${slackId}`,
       {
         method: "POST",
-      },
+      }
     )
       .then((r) => r.json())
       .then((d) => d.status == 200);
     await aclient.client.chat.postMessage({
       channel: body.user.id,
-      text: `<@${slackId}> ${is_on_the_platform ? "is" : "is not"} on the platform!`,
+      text: `<@${slackId}> ${
+        is_on_the_platform ? "is" : "is not"
+      } on the platform!`,
     });
     await aclient.client.chat.postMessage({
       channel: `C091XDSB68G`,
-      text: `User <@${slackId}> was checked if they were on the platform!(fun fact: ${is_on_the_platform ? "they are on it" : "they are not on it :3"})  (_manually by <@${body.user.id}>_)`,
+      text: `User <@${slackId}> was checked if they were on the platform!(fun fact: ${
+        is_on_the_platform ? "they are on it" : "they are not on it :3"
+      })  (_manually by <@${body.user.id}>_)`,
     });
   } catch (error) {
     console.error(error);
@@ -579,7 +610,7 @@ app.get("/leaderboard", async (req, res) => {
             };
           }),
         };
-      }),
+      })
     );
   } catch (e) {
     console.error(e);
@@ -594,6 +625,8 @@ function getEmoji(type) {
       return "🎁";
     case "ShopOrder":
       return "🛒";
+    case "ShipEvent":
+      return ":money_with_wings:";
     default:
       return `:x: ${type} :x:`;
   }
@@ -612,7 +645,7 @@ aclient.command("/som-watch-my-balance", async ({ command, ack, respond }) => {
   // get users SOM id
   const somId = await sompg.query(
     `SELECT id from "users" WHERE "slack_id" = $1`,
-    [userId],
+    [userId]
   );
   if (somId.rows.length === 0) {
     return respond({
@@ -668,12 +701,14 @@ aclient.command("/som-add-channel", async ({ command, ack, respond }) => {
   }
   // add channel to the list
   somDbRef.channels_to_share_to.push(
-    channel_id.replaceAll("<#", "").replaceAll(">", ""),
+    channel_id.replaceAll("<#", "").replaceAll(">", "")
   );
   await keyv.set(`user_` + slackRef, somDbRef);
   respond({
     response_type: "ephemeral",
-    text: `:done: Channel <#${channel_id.replace("<#", "").replace(">", "")}> has been added to the list!`,
+    text: `:done: Channel <#${channel_id
+      .replace("<#", "")
+      .replace(">", "")}> has been added to the list!`,
   });
 });
 async function queryPayoutsAndUpdateThemUsers() {
@@ -691,7 +726,7 @@ async function queryPayoutsAndUpdateThemUsers() {
         (err, result) => {
           if (err) return reject(err);
           resolve(result.rows);
-        },
+        }
       );
     });
     console.log(1);
@@ -709,7 +744,7 @@ async function queryPayoutsAndUpdateThemUsers() {
       // get the total amount
       const totalAmount = payoutsForUser.reduce(
         (acc, payout) => parseInt(acc) + parseInt(payout.amount),
-        0,
+        0
       );
       const newPayouts = payoutsForUser.filter((d) => {
         return !dbUser.payouts || !dbUser.payouts.some((p) => p.id === d.id);
@@ -719,7 +754,13 @@ async function queryPayoutsAndUpdateThemUsers() {
         for (const pay of newPayouts) {
           // send them to channel or user or something idk
           const channels_to_share_to = dbUser.channels_to_share_to || [];
-          const formated_string = `${getEmoji(pay.payable_type)} ${pay.amount > 0 ? "+" : ""}${pay.amount} :shells: were ${pay.amount > 0 ? "added" : "subtracted"}, user balance now totaling *${totalAmount}* :shells: (${totalAmount - parseInt(pay.amount)} -> ${totalAmount})`;
+          const formated_string = `${getEmoji(pay.payable_type)} ${
+            pay.amount > 0 ? "+" : ""
+          }${pay.amount} :shells: were ${
+            pay.amount > 0 ? "added" : "subtracted"
+          }, user balance now totaling *${totalAmount}* :shells: (${
+            totalAmount - parseInt(pay.amount)
+          } -> ${totalAmount})`;
           for (const channel of [...channels_to_share_to, "C093SV39718"]) {
             try {
               await client.chat.postMessage({
@@ -732,7 +773,7 @@ async function queryPayoutsAndUpdateThemUsers() {
             } catch (e) {
               console.error(
                 `Failed to send payout message to channel ${channel}:`,
-                e,
+                e
               );
             } finally {
               await new Promise((r) => setTimeout(r, 500));
