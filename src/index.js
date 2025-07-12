@@ -654,10 +654,15 @@ aclient.command("/som-watch-my-balance", async ({ command, ack, respond }) => {
     });
   }
   const somUserId = somId.rows[0].id;
+  // get payouts that already exist from the db
+  const payouts = await sompg.query(
+    `SELECT * FROM "payouts" WHERE "user_id" = $1`,
+    [somUserId]
+  );
   // setup DB
   await keyv.set(`user_` + somUserId, {
     slack_id: userId,
-    payouts: [],
+    payouts:  payouts.rows || [],
     channels_to_share_to: [command.user_id],
     shells: 0, // yea they are starting from 0
   });
