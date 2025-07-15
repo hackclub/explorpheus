@@ -789,7 +789,7 @@ async function queryPayoutsAndUpdateThemUsers() {
         const entry = {
           ...dbUser,
           shells: totalAmount,
-          payouts: payoutsForUser.filter((d) => {
+          payouts: payoutsForUser.map((d) => {
             return {
               type: d.payable_type,
               id: d.id,
@@ -802,9 +802,17 @@ async function queryPayoutsAndUpdateThemUsers() {
         entries.push(entry)
       }
     }
-    keyv.set(`lb_users`, entries.map(d => {
-      delete d.channels_to_share_to;
-      return d;
+    keyv.set(`lb_users`, entries.map(dd => {
+      delete dd.channels_to_share_to;
+      dd.payouts = d.payouts.map((d) => {
+        return {
+          type: d.payable_type,
+          id: d.id,
+          amount: d.amount,
+          created_at: d.created_at,
+        };
+      })
+      return dd;
     }))
   } catch (e) {
     console.error("Failed to query payouts:", e);
