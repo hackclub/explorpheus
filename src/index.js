@@ -589,24 +589,25 @@ aclient.start(process.env.PORT).then(() => {
 });
 app.get("/leaderboard", async (req, res) => {
   try {
-    const users_list = (await keyv.get("users_list")) || [];
-    const users = await keyv.getMany(users_list.map((d) => `user_` + d));
-    res.json(
-      (users || []).map((d) => {
-        delete d.channels_to_share_to;
-        return {
-          ...d,
-          payouts: d.payouts.map((dd) => {
-            return {
-              amount: dd.amount,
-              created_at: dd.created_at,
-              id: dd.id,
-              payable_type: dd.payable_type,
-            };
-          }),
-        };
-      })
-    );
+    // const users_list = (await keyv.get("users_list")) || [];
+    // const users = await keyv.getMany(users_list.map((d) => `user_` + d));
+    // res.json(
+    //   (users || []).map((d) => {
+    //     delete d.channels_to_share_to;
+    //     return {
+    //       ...d,
+    //       payouts: d.payouts.map((dd) => {
+    //         return {
+    //           amount: dd.amount,
+    //           created_at: dd.created_at,
+    //           id: dd.id,
+    //           payable_type: dd.payable_type,
+    //         };
+    //       }),
+    //     };
+    //   })
+    // );
+    res.json(await keyv.get(`lb_users`))
   } catch (e) {
     console.error(e);
     res.status(500).json({
@@ -800,7 +801,10 @@ async function queryPayoutsAndUpdateThemUsers() {
         entries.push(entry)
       }
     }
-    keyv.set(`lb_users`, entries)
+    keyv.set(`lb_users`, entries.map(d => {
+      delete d.channels_to_share_to;
+      return d;
+    }))
   } catch (e) {
     console.error("Failed to query payouts:", e);
     new Promise((r) => setTimeout(r, 1000));
