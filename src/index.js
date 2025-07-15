@@ -739,6 +739,7 @@ async function queryPayoutsAndUpdateThemUsers() {
       payoutsByUser[payout.user_id] = payoutsByUser[payout.user_id] || [];
       payoutsByUser[payout.user_id].push(payout);
     }
+    const entries = []
     // now for each user! (WHY)
     for (const [user, payoutsForUser] of Object.entries(payoutsByUser)) {
       // const payoutsForUser = payoutsByUser[user] || [];
