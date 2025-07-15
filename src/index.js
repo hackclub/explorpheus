@@ -91,8 +91,7 @@ async function sendQueueMessage() {
   // pull all queue messages from airtable lol
   const updateRecords = [];
   const currentRecords = await fetch(
-    `https://api.airtable.com/v0/${
-      env.BASE_ID
+    `https://api.airtable.com/v0/${env.BASE_ID
     }/messages_to_users?filterByFormula=${encodeURIComponent(
       "AND({Automation_-_sent_to_user} = FALSE(), {Send} = TRUE())"
     )}`,
@@ -267,7 +266,7 @@ aclient.event("team_join", async ({ event, context }) => {
         channel: `C091XDSB68G`,
         text: `User <@${event.user.id}> thing failed \`${e.message}\` \n\n Will retry later`,
       });
-    } catch (e) {}
+    } catch (e) { }
   }
 });
 
@@ -387,9 +386,8 @@ aclient.event("app_home_opened", async ({ event, context }) => {
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: `<@${d.id}> - ${new Date(d.date).toString()} ${
-                  d.got_verified ? ":done:" : ":x:"
-                }`,
+                text: `<@${d.id}> - ${new Date(d.date).toString()} ${d.got_verified ? ":done:" : ":x:"
+                  }`,
               },
             };
           }),
@@ -515,8 +513,7 @@ aclient.view("check_user", async ({ ack, body, view, context }) => {
   const email = info.user.profile.email;
   try {
     const is_on_the_platform = await fetch(
-      `https://${env.DOMAIN_OF_HOST}/explorpheus/magic-link?token=${
-        env.API_KEY
+      `https://${env.DOMAIN_OF_HOST}/explorpheus/magic-link?token=${env.API_KEY
       }&email=${encodeURIComponent(email)}&slack_id=${slackId}`,
       {
         method: "POST",
@@ -526,15 +523,13 @@ aclient.view("check_user", async ({ ack, body, view, context }) => {
       .then((d) => d.status == 200);
     await aclient.client.chat.postMessage({
       channel: body.user.id,
-      text: `<@${slackId}> ${
-        is_on_the_platform ? "is" : "is not"
-      } on the platform!`,
+      text: `<@${slackId}> ${is_on_the_platform ? "is" : "is not"
+        } on the platform!`,
     });
     await aclient.client.chat.postMessage({
       channel: `C091XDSB68G`,
-      text: `User <@${slackId}> was checked if they were on the platform!(fun fact: ${
-        is_on_the_platform ? "they are on it" : "they are not on it :3"
-      })  (_manually by <@${body.user.id}>_)`,
+      text: `User <@${slackId}> was checked if they were on the platform!(fun fact: ${is_on_the_platform ? "they are on it" : "they are not on it :3"
+        })  (_manually by <@${body.user.id}>_)`,
     });
   } catch (error) {
     console.error(error);
@@ -662,7 +657,7 @@ aclient.command("/som-watch-my-balance", async ({ command, ack, respond }) => {
   // setup DB
   await keyv.set(`user_` + somUserId, {
     slack_id: userId,
-    payouts:  payouts.rows || [],
+    payouts: payouts.rows || [],
     channels_to_share_to: [command.user_id],
     shells: 0, // yea they are starting from 0
   });
@@ -726,7 +721,8 @@ async function queryPayoutsAndUpdateThemUsers() {
     console.log(0);
     const payouts = await new Promise((resolve, reject) => {
       sompg.query(
-        `SELECT * FROM "payouts" WHERE "user_id" IN (${placeholders})`,
+        // `SELECT * FROM "payouts" WHERE "user_id" IN (${placeholders})`,
+        `SELECT * FROM "payouts"`,
         users_list,
         (err, result) => {
           if (err) return reject(err);
@@ -759,13 +755,10 @@ async function queryPayoutsAndUpdateThemUsers() {
         for (const pay of newPayouts) {
           // send them to channel or user or something idk
           const channels_to_share_to = dbUser.channels_to_share_to || [];
-          const formated_string = `${getEmoji(pay.payable_type)} ${
-            pay.amount > 0 ? "+" : ""
-          }${pay.amount} :shells: were ${
-            pay.amount > 0 ? "added" : "subtracted"
-          }, user balance now totaling *${totalAmount}* :shells: (${
-            totalAmount - parseInt(pay.amount)
-          } -> ${totalAmount})`;
+          const formated_string = `${getEmoji(pay.payable_type)} ${pay.amount > 0 ? "+" : ""
+            }${pay.amount} :shells: were ${pay.amount > 0 ? "added" : "subtracted"
+            }, user balance now totaling *${totalAmount}* :shells: (${totalAmount - parseInt(pay.amount)
+            } -> ${totalAmount})`;
           for (const channel of [...channels_to_share_to, "C093SV39718"]) {
             try {
               await client.chat.postMessage({
@@ -830,7 +823,7 @@ async function reTryLoop() {
           channel: `C091XDSB68G`,
           text: `User <@${user}> is being tried again :)`,
         });
-      } catch (e) {}
+      } catch (e) { }
       await handleTeamJoinThing(client, airtable, env, last_5_users, user);
       found.push(user);
     } catch (e) {
@@ -843,7 +836,7 @@ async function reTryLoop() {
           channel: `C091XDSB68G`,
           text: `User <@${user}> failed AGAIN\n trying again soon`,
         });
-      } catch (e) {}
+      } catch (e) { }
 
       continue;
     } finally {
