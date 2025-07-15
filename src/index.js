@@ -739,8 +739,8 @@ async function queryPayoutsAndUpdateThemUsers() {
       payoutsByUser[payout.user_id].push(payout);
     }
     // now for each user! (WHY)
-    for (const user of users_list) {
-      const payoutsForUser = payoutsByUser[user] || [];
+    for (const [user, payoutsForUser] of Object.entries(payoutsByUser)) {
+      // const payoutsForUser = payoutsByUser[user] || [];
       const dbUser = (await keyv.get(`user_` + user)) || {};
       // get the total amount
       const totalAmount = payoutsForUser.reduce(
@@ -759,40 +759,44 @@ async function queryPayoutsAndUpdateThemUsers() {
             }${pay.amount} :shells: were ${pay.amount > 0 ? "added" : "subtracted"
             }, user balance now totaling *${totalAmount}* :shells: (${totalAmount - parseInt(pay.amount)
             } -> ${totalAmount})`;
-          for (const channel of [...channels_to_share_to, "C093SV39718"]) {
-            try {
-              await client.chat.postMessage({
-                channel: channel,
-                text:
-                  channel == "C093SV39718"
-                    ? `<@${channels_to_share_to[0]}>: ${formated_string}`
-                    : formated_string,
-              });
-            } catch (e) {
-              console.error(
-                `Failed to send payout message to channel ${channel}:`,
-                e
-              );
-            } finally {
-              await new Promise((r) => setTimeout(r, 500));
+          if (users_list.includes(user)) {
+            for (const channel of [...channels_to_share_to, "C093SV39718"]) {
+              try {
+                await client.chat.postMessage({
+                  channel: channel,
+                  text:
+                    channel == "C093SV39718"
+                      ? `<@${channels_to_share_to[0]}>: ${formated_string}`
+                      : formated_string,
+                });
+              } catch (e) {
+                console.error(
+                  `Failed to send payout message to channel ${channel}:`,
+                  e
+                );
+              } finally {
+                await new Promise((r) => setTimeout(r, 500));
+              }
             }
           }
           await new Promise((r) => setTimeout(r, 100));
         }
       }
       // update the user in keyv
-      await keyv.set(`user_` + user, {
-        ...dbUser,
-        shells: totalAmount,
-        payouts: payoutsForUser.filter((d) => {
-          return {
-            type: d.payable_type,
-            id: d.id,
-            amount: d.amount,
-            created_at: d.created_at,
-          };
-        }),
-      });
+      if (payoutsForUser.length > 0) {
+        await keyv.set(`user_` + user, {
+          ...dbUser,
+          shells: totalAmount,
+          payouts: payoutsForUser.filter((d) => {
+            return {
+              type: d.payable_type,
+              id: d.id,
+              amount: d.amount,
+              created_at: d.created_at,
+            };
+          }),
+        });
+      }
     }
   } catch (e) {
     console.error("Failed to query payouts:", e);
