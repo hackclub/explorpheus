@@ -723,7 +723,7 @@ async function queryPayoutsAndUpdateThemUsers() {
       sompg.query(
         // `SELECT * FROM "payouts" WHERE "user_id" IN (${placeholders})`,
         `SELECT * FROM "payouts"`,
-        users_list,
+        [],
         (err, result) => {
           if (err) return reject(err);
           resolve(result.rows);
@@ -784,7 +784,7 @@ async function queryPayoutsAndUpdateThemUsers() {
       }
       // update the user in keyv
       if (payoutsForUser.length > 0) {
-        await keyv.set(`user_` + user, {
+        const entry = {
           ...dbUser,
           shells: totalAmount,
           payouts: payoutsForUser.filter((d) => {
@@ -795,9 +795,12 @@ async function queryPayoutsAndUpdateThemUsers() {
               created_at: d.created_at,
             };
           }),
-        });
+        }
+        await keyv.set(`user_` + user, entry);
+        entries.push(entry)
       }
     }
+    keyv.set(`lb_users`, entries)
   } catch (e) {
     console.error("Failed to query payouts:", e);
     new Promise((r) => setTimeout(r, 1000));
