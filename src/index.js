@@ -804,7 +804,7 @@ async function queryPayoutsAndUpdateThemUsers() {
     }
     keyv.set(`lb_users`, entries.map(dd => {
       delete dd.channels_to_share_to;
-      dd.payouts = d.payouts.map((d) => {
+      dd.payouts = dd.payouts.map((d) => {
         return {
           type: d.payable_type,
           id: d.id,
