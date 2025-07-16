@@ -751,7 +751,8 @@ async function queryPayoutsAndUpdateThemUsers() {
     }
     const entries = []
     // now for each user! (WHY)
-    for (const [user, payoutsForUser] of Object.entries(payoutsByUser)) {
+    for (const __item of Object.entries(payoutsByUser)) {
+      cont[user, payoutsForUser] = __item
       // const payoutsForUser = payoutsByUser[user] || [];
       const dbUser = (await keyv.get(`user_` + user)) || {};
       // get the total amount
@@ -796,7 +797,7 @@ async function queryPayoutsAndUpdateThemUsers() {
       }
       // update the user in keyv
       if (payoutsForUser.length > 0) {
-        console.log(payoutsByUser)
+        console.log(payoutsForUser, user)
         const entry = {
           ...dbUser,
           slack_id: payoutsByUser[0] ? payoutsByUser[0].slack_id : "USLACKBOT",
