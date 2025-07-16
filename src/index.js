@@ -722,8 +722,13 @@ async function queryPayoutsAndUpdateThemUsers() {
     console.log(0);
     const payouts = await new Promise((resolve, reject) => {
       sompg.query(
-        // `SELECT * FROM "payouts" WHERE "user_id" IN (${placeholders})`,
-        `SELECT * FROM "payouts"`,
+        `
+    SELECT 
+      payouts.id, pau 
+      users.slack_id 
+    FROM payouts
+    JOIN users ON payouts.user_id = users.id
+    `,
         [],
         (err, result) => {
           if (err) return reject(err);
@@ -731,6 +736,7 @@ async function queryPayoutsAndUpdateThemUsers() {
         }
       );
     });
+
     console.log(1);
     console.log(`Found `, payouts);
     // sort payouts into user groups now
@@ -781,13 +787,14 @@ async function queryPayoutsAndUpdateThemUsers() {
               }
             }
           }
-          await new Promise((r) => setTimeout(r, 100));
+          await new Promise((r) => setTimeout(r, 1000));
         }
       }
       // update the user in keyv
       if (payoutsForUser.length > 0) {
         const entry = {
           ...dbUser,
+          slack_id: payoutsByUser[0].slack_id,
           shells: totalAmount,
           payouts: payoutsForUser.map((d) => {
             return {
@@ -816,7 +823,7 @@ async function queryPayoutsAndUpdateThemUsers() {
     }))
   } catch (e) {
     console.error("Failed to query payouts:", e);
-    new Promise((r) => setTimeout(r, 1000));
+    new Promise((r) => setTimeout(r, 3000));
   }
 }
 
