@@ -18,6 +18,7 @@ const sompg = new Pool({
 });
 
 import envSchema from "./env.js";
+import { queryForProjectsWith10hPendingDevlogs } from "./notify_on_10.js";
 const db = new JSONDb("./db.json");
 let try_again = db.get("try_again") || [];
 let alreadyCheckedEmails = [];
@@ -727,7 +728,7 @@ async function queryPayoutsAndUpdateThemUsers() {
       sompg.query(
         `
     SELECT 
-      payouts.id, pau 
+      payouts.*, 
       users.slack_id 
     FROM payouts
     JOIN users ON payouts.user_id = users.id
@@ -886,3 +887,4 @@ retryLooped();
 // magic-url
 sendQueueMessage();
 updatePayoutsLoop();
+setInterval(queryForProjectsWith10hPendingDevlogs, 60 * 1000 * 5)
