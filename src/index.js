@@ -796,9 +796,10 @@ async function queryPayoutsAndUpdateThemUsers() {
       }
       // update the user in keyv
       if (payoutsForUser.length > 0) {
+        console.log(payoutsByUser)
         const entry = {
           ...dbUser,
-          slack_id: payoutsByUser[0].slack_id,
+          slack_id: payoutsByUser[0] ? payoutsByUser[0].slack_id : "USLACKBOT",
           shells: totalAmount,
           payouts: payoutsForUser.map((d) => {
             return {
