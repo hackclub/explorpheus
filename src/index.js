@@ -752,7 +752,7 @@ async function queryPayoutsAndUpdateThemUsers() {
     const entries = []
     // now for each user! (WHY)
     for (const __item of Object.entries(payoutsByUser)) {
-      cont[user, payoutsForUser] = __item
+      const [user, payoutsForUser] = __item
       // const payoutsForUser = payoutsByUser[user] || [];
       const dbUser = (await keyv.get(`user_` + user)) || {};
       // get the total amount
