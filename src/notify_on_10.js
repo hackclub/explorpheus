@@ -39,7 +39,12 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app) {
   const data = await sqlQueryToGetData(pg)
   for (const d of data) {
     if (d.user_id !== 5) continue; // for me only rnnn
-    const diff = d.proj_time - (d.all_proj_time || 0)
+    const diff = parseInt(d.proj_time) - parseInt(d.all_proj_time || "0")
+    app.client.chat.postMessage({
+      channel: `U07L45W79E1`,
+      text: `omg neon enon its happening :333:  ${diff} >= ${TEN_HOURS_IN_SECONDS}\n${JSON.stringify(d)}`
+    })
+    console.log(diff, d.user_id)
     if (diff >= TEN_HOURS_IN_SECONDS) {
       app.client.chat.postMessage({
         channel: await getSlackId(pg, d.user_id),
