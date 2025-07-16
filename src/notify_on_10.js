@@ -42,7 +42,7 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app) {
     const diff = d.proj_time - (d.all_proj_time || 0)
     if (diff >= TEN_HOURS_IN_SECONDS) {
       app.client.chat.postMessage({
-        channel: await getSlackId(pg, d.user_id);
+        channel: await getSlackId(pg, d.user_id),
         text: `Meow meow neon your project https://summer.hackclub.com/projects/${d.id} has a unpushed dev log over 10h.... make sure you push it soon gang!!1!`
       })
     }
