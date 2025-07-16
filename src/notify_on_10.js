@@ -58,8 +58,11 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app) {
   }
 }
 export function getSlackId(pg, uid) {
-  return pg.query(`select slack_id from "users" where id = ?`, [uid]).then(d => d.rows[0].slack_id)
+  return pg
+    .query(`SELECT slack_id FROM "users" WHERE id = $1;`, [uid])
+    .then(d => d.rows[0]?.slack_id);
 }
+
 export function sqlQueryToGetData(pg) {
   return pg.query(
     `SELECT
