@@ -712,6 +712,9 @@ aclient.command("/som-add-channel", async ({ command, ack, respond }) => {
       .replace(">", "")}> has been added to the list!`,
   });
 });
+
+
+
 async function queryPayoutsAndUpdateThemUsers() {
   try {
     console.log(`Starting`);
