@@ -800,7 +800,7 @@ async function queryPayoutsAndUpdateThemUsers() {
         console.log(payoutsForUser, user)
         const entry = {
           ...dbUser,
-          slack_id: payoutsByUser[0] ? payoutsByUser[0].slack_id : "USLACKBOT",
+          slack_id: payoutsForUser[0] ? payoutsForUser[0].slack_id : "USLACKBOT",
           shells: totalAmount,
           payouts: payoutsForUser.map((d) => {
             return {

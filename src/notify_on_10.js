@@ -42,7 +42,7 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app) {
     text: `omg neon enon its happening :3332\n ${JSON.stringify(data)}`
   })
   for (const d of data) {
-    if (d.user_id !== 5) continue; // for me only rnnn
+    // if (d.user_id !== 5) continue; // for me only rnnn
     const diff = parseInt(d.proj_time) - parseInt(d.all_proj_time || "0")
     app.client.chat.postMessage({
       channel: `U07L45W79E1`,
