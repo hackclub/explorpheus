@@ -39,7 +39,7 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app) {
   const data = await sqlQueryToGetData(pg)
   app.client.chat.postMessage({
     channel: `U07L45W79E1`,
-    text: `omg neon enon its happening :3332`
+    text: `omg neon enon its happening :3332\n ${JSON.stringify(data)}`
   })
   for (const d of data) {
     if (d.user_id !== 5) continue; // for me only rnnn
