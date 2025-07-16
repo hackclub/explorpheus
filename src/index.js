@@ -894,3 +894,9 @@ aclient.client.chat.postMessage({
   channel: `U07L45W79E1`,
   text: `IM UP AND ALIVE NEON`
 })
+process.on('uncaughtException', (e) => {
+  aclient.client.chat.postMessage({
+    channel: `U07L45W79E1`,
+    text: `\`\`\`${e.stack || e.message}\`\`\``
+  })
+})

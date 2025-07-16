@@ -32,10 +32,10 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app) {
   /**
    * type: {id:string,user_id:string,all_project_time:stringint, proj_time:stringint}
    */
-  app.client.chat.postMessage({
-    channel: `U07L45W79E1`,
-    text: `omg neon enon its happening :333`
-  })
+  // app.client.chat.postMessage({
+  //   channel: `U07L45W79E1`,
+  //   text: `omg neon enon its happening :333`
+  // })
   const data = await sqlQueryToGetData(pg)
   app.client.chat.postMessage({
     channel: `U07L45W79E1`,
