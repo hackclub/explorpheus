@@ -18,8 +18,8 @@ WHERE p.id = 6; -- Replace with your actual project ID
 "hey neon why are u running a massive ahh sql query"
 */
 const TEN_HOURS_IN_SECONDS = 36000 - 5
-import { App } from "@slack/bolt";
-import { Pool } from "pg";
+// import { App } from "@slack/bolt";
+// import { Pool } from "pg";
 
 /**
  * 
