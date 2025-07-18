@@ -17,7 +17,7 @@ FROM projects p
 WHERE p.id = 6; -- Replace with your actual project ID
 "hey neon why are u running a massive ahh sql query"
 */
-// const TEN_HOURS_IN_SECONDS = 36000 - 5
+const TEN_HOURS_IN_SECONDS = 36000 - 5
 // import { App } from "@slack/bolt";
 // import { Pool } from "pg";
 
@@ -46,7 +46,7 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app, db) {
       console.log(`skipping ${d.id} as already notified`)
       continue
     }
-    // const diff = parseInt(d.proj_time) - parseInt(d.all_proj_time || "0")
+    const diff = parseInt(d.proj_time) - parseInt(d.all_proj_time || "0")
     app.client.chat.postMessage({
       channel: `C091XDSB68G`,
       text: `omg  enon its happening :333:  ${diff} >= ${TEN_HOURS_IN_SECONDS} - project id: ${d.id}`
@@ -61,6 +61,10 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app, db) {
     await new Promise(resolve => setTimeout(resolve, 100));
     // }
   }
+  await app.client.chat.postMessage({
+    channel: `C091XDSB68G`,
+    text: `omg neon enon its done :3332`
+  })
 }
 export function getSlackId(pg, uid) {
   return pg
