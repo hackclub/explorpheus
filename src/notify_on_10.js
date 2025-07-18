@@ -17,7 +17,7 @@ FROM projects p
 WHERE p.id = 6; -- Replace with your actual project ID
 "hey neon why are u running a massive ahh sql query"
 */
-const TEN_HOURS_IN_SECONDS = 36000 - 5
+const NINE_HOURS_IN_SECONDS = 32400 - 5
 // import { App } from "@slack/bolt";
 // import { Pool } from "pg";
 
@@ -49,10 +49,10 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app, db) {
     const diff = parseInt(d.proj_time) - parseInt(d.all_proj_time || "0")
     app.client.chat.postMessage({
       channel: `C091XDSB68G`,
-      text: `omg  enon its happening :333:  ${diff} >= ${TEN_HOURS_IN_SECONDS} - project id: ${d.id}`
+      text: `omg  enon its happening :333:  ${diff} >= ${NINE_HOURS_IN_SECONDS} - project id: ${d.id}`
     })
     // console.log(diff, d.user_id)
-    // if (diff >= TEN_HOURS_IN_SECONDS) {
+    // if (diff >= NINE_HOURS_IN_SECONDS) {
     app.client.chat.postMessage({
       // for first run only send to log channel
       // channel: `C091XDSB68G`,
@@ -98,6 +98,6 @@ FROM (
     AND cardinality(p.hackatime_project_keys) > 0
     AND p.is_deleted = false
 ) sub
-WHERE (proj_time - all_project_time) >= 34000;
+WHERE (proj_time - all_project_time) >= 32400;
 `).then(d => d.rows)
 }
