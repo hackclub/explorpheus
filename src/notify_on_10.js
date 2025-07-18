@@ -57,9 +57,8 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app, db) {
       // for first run only send to log channel
       // channel: `C091XDSB68G`,
       // text: `[CACHE RUN IGNORE PLEASE] Hey there your project https://summer.hackclub.com/projects/${d.id} has a unpushed dev log over 10h! make sure you upload your devlog soon as *anything past 10h will not be counted towards your project time!*`
-
       channel: await getSlackId(pg, d.user_id),
-      text: `Hey there your project https://summer.hackclub.com/projects/${d.id} has a unpushed dev log over 10h! make sure you upload your devlog soon as *anything past 10h will not be counted towards your project time!*`
+      text: `Howdy! You’re coming up on 10 Hackatime hours without a devlog on your <https://summer.hackclub.com/projects/${d.id}|project> … better post one soon so you don’t start losing time!!`
     })
     await db.set(`project:${d.id}`, true)
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -99,6 +98,6 @@ FROM (
     AND cardinality(p.hackatime_project_keys) > 0
     AND p.is_deleted = false
 ) sub
-WHERE (proj_time - all_project_time) >= 36000;
+WHERE (proj_time - all_project_time) >= 34000;
 `).then(d => d.rows)
 }
