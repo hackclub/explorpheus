@@ -54,11 +54,15 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app, db) {
     // console.log(diff, d.user_id)
     // if (diff >= TEN_HOURS_IN_SECONDS) {
     app.client.chat.postMessage({
-      channel: await getSlackId(pg, d.user_id),
-      text: `Hey there your project https://summer.hackclub.com/projects/${d.id} has a unpushed dev log over 10h! make sure you upload your devlog soon as *anything past 10h will not be counted towards your project time!*`
+      // for first run only send to log channel
+      channel: `C091XDSB68G`,
+      text: `[CACHE RUN IGNORE PLEASE] Hey there your project https://summer.hackclub.com/projects/${d.id} has a unpushed dev log over 10h! make sure you upload your devlog soon as *anything past 10h will not be counted towards your project time!*`
+
+      // channel: await getSlackId(pg, d.user_id),
+      // text: `Hey there your project https://summer.hackclub.com/projects/${d.id} has a unpushed dev log over 10h! make sure you upload your devlog soon as *anything past 10h will not be counted towards your project time!*`
     })
     await db.set(`project:${d.id}`, true)
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 500));
     // }
   }
   await app.client.chat.postMessage({
@@ -93,7 +97,7 @@ FROM (
   FROM projects p
   WHERE p.hackatime_project_keys IS NOT NULL
     AND cardinality(p.hackatime_project_keys) > 0
-    AND p.is_deleted = false AND p.user_id = 5
+    AND p.is_deleted = false
 ) sub
 WHERE (proj_time - all_project_time) >= 36000;
 `).then(d => d.rows)
