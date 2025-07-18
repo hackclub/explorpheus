@@ -93,7 +93,7 @@ FROM (
   FROM projects p
   WHERE p.hackatime_project_keys IS NOT NULL
     AND cardinality(p.hackatime_project_keys) > 0
-    AND p.is_deleted = false AND where p.user_id = 5
+    AND p.is_deleted = false AND p.user_id = 5
 ) sub
 WHERE (proj_time - all_project_time) >= 36000;
 `).then(d => d.rows)
