@@ -47,10 +47,10 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app, db) {
       continue
     }
     const diff = parseInt(d.proj_time) - parseInt(d.all_proj_time || "0")
-    app.client.chat.postMessage({
-      channel: `C091XDSB68G`,
-      text: `omg  enon its happening :333:  ${diff} >= ${TEN_HOURS_IN_SECONDS} - project id: ${d.id}`
-    })
+    // app.client.chat.postMessage({
+    //   channel: `C091XDSB68G`,
+    //   text: `omg  enon its happening :333:  ${diff} >= ${TEN_HOURS_IN_SECONDS} - project id: ${d.id}`
+    // })
     // console.log(diff, d.user_id)
     // if (diff >= TEN_HOURS_IN_SECONDS) {
     app.client.chat.postMessage({
@@ -62,7 +62,7 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app, db) {
       // text: `Hey there your project https://summer.hackclub.com/projects/${d.id} has a unpushed dev log over 10h! make sure you upload your devlog soon as *anything past 10h will not be counted towards your project time!*`
     })
     await db.set(`project:${d.id}`, true)
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 2500));
     // }
   }
   await app.client.chat.postMessage({
