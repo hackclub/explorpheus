@@ -7,24 +7,28 @@ console.log("meow");
 const stamp = Date.now()
 console.log(
   client.query(
-    `SELECT
-  p.id,
-  p.user_id,
-  p.title,
-  (
-    SELECT COALESCE(SUM(d.seconds_coded), 0)
-    FROM devlogs d
-    WHERE d.project_id = p.id
-  ) AS all_project_time,
-  (
-    SELECT COALESCE(SUM(h.seconds), 0)
-    FROM hackatime_projects h
-    WHERE h.name = ANY(p.hackatime_project_keys)
-  ) AS proj_time
-FROM projects p
-WHERE p.hackatime_project_keys IS NOT NULL
-  AND cardinality(p.hackatime_project_keys) > 0
-  AND p.is_deleted = false
+    `SELECT *
+FROM (
+  SELECT
+    p.id,
+    p.user_id,
+    p.title,
+    (
+      SELECT COALESCE(SUM(d.seconds_coded), 0)
+      FROM devlogs d
+      WHERE d.project_id = p.id
+    ) AS all_project_time,
+    (
+      SELECT COALESCE(SUM(h.seconds), 0)
+      FROM hackatime_projects h
+      WHERE h.name = ANY(p.hackatime_project_keys)
+    ) AS proj_time
+  FROM projects p
+  WHERE p.hackatime_project_keys IS NOT NULL
+    AND cardinality(p.hackatime_project_keys) > 0
+    AND p.is_deleted = false
+) sub
+WHERE (proj_time - all_project_time) >= 36000;
 `,
     (_e, d) => {
       console.log(_e ? _e : d.rows)

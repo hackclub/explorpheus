@@ -889,7 +889,7 @@ retryLooped();
 // magic-url
 sendQueueMessage();
 updatePayoutsLoop();
-setInterval(() => queryForProjectsWith10hPendingDevlogs(sompg, aclient), 60 * 1000)
+setInterval(() => queryForProjectsWith10hPendingDevlogs(sompg, aclient), 60 * 1000 * 5)
 aclient.client.chat.postMessage({
   channel: `U07L45W79E1`,
   text: `IM UP AND ALIVE NEON`

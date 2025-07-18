@@ -21,4 +21,5 @@ JOIN users ON projects.user_id = users.id`).then(d => d.rows)
 }
 export async function runTheFunnyQuery(pg, app, db) {
   const data = await queryDb()
+
 }

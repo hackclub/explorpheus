@@ -17,7 +17,7 @@ FROM projects p
 WHERE p.id = 6; -- Replace with your actual project ID
 "hey neon why are u running a massive ahh sql query"
 */
-const TEN_HOURS_IN_SECONDS = 36000 - 5
+// const TEN_HOURS_IN_SECONDS = 36000 - 5
 // import { App } from "@slack/bolt";
 // import { Pool } from "pg";
 
@@ -26,7 +26,7 @@ const TEN_HOURS_IN_SECONDS = 36000 - 5
  * @param {Pool} pg 
  * @param {App} app 
  */
-export async function queryForProjectsWith10hPendingDevlogs(pg, app) {
+export async function queryForProjectsWith10hPendingDevlogs(pg, app, db) {
   // i love testing in prod.
   // TODO: make it work with other people then me :pf
   /**
@@ -42,18 +42,24 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app) {
     text: `omg n/eon enon its happening :3332\n`
   })
   for (const d of data) {
-    const diff = parseInt(d.proj_time) - parseInt(d.all_proj_time || "0")
+    if (await db.get(`project:${d.id}`)) {
+      console.log(`skipping ${d.id} as already notified`)
+      continue
+    }
+    // const diff = parseInt(d.proj_time) - parseInt(d.all_proj_time || "0")
     app.client.chat.postMessage({
       channel: `C091XDSB68G`,
       text: `omg  enon its happening :333:  ${diff} >= ${TEN_HOURS_IN_SECONDS} - project id: ${d.id}`
     })
-    console.log(diff, d.user_id)
-    if (diff >= TEN_HOURS_IN_SECONDS) {
-      app.client.chat.postMessage({
-        channel: await getSlackId(pg, d.user_id),
-        text: `Meow meow neon your project https://summer.hackclub.com/projects/${d.id} has a unpushed dev log over 10h.... make sure you push it soon gang!!1!`
-      })
-    }
+    // console.log(diff, d.user_id)
+    // if (diff >= TEN_HOURS_IN_SECONDS) {
+    app.client.chat.postMessage({
+      channel: await getSlackId(pg, d.user_id),
+      text: `Hey there your project https://summer.hackclub.com/projects/${d.id} has a unpushed dev log over 10h! make sure you upload your devlog soon as *anything past 10h will not be counted towards your project time!*`
+    })
+    await db.set(`project:${d.id}`, true)
+    await new Promise(resolve => setTimeout(resolve, 100));
+    // }
   }
 }
 export function getSlackId(pg, uid) {
@@ -64,23 +70,27 @@ export function getSlackId(pg, uid) {
 
 export function sqlQueryToGetData(pg) {
   return pg.query(
-    `SELECT
-  p.id,
-  p.user_id,
-  p.title,
-  (
-    SELECT COALESCE(SUM(d.seconds_coded), 0)
-    FROM devlogs d
-    WHERE d.project_id = p.id
-  ) AS all_project_time,
-  (
-    SELECT COALESCE(SUM(h.seconds), 0)
-    FROM hackatime_projects h
-    WHERE h.name = ANY(p.hackatime_project_keys)
-  ) AS proj_time
-FROM projects p
-WHERE p.hackatime_project_keys IS NOT NULL
-  AND cardinality(p.hackatime_project_keys) > 0
-  AND p.is_deleted = false AND p.user_id = 5
+    `SELECT *
+FROM (
+  SELECT
+    p.id,
+    p.user_id,
+    p.title,
+    (
+      SELECT COALESCE(SUM(d.seconds_coded), 0)
+      FROM devlogs d
+      WHERE d.project_id = p.id
+    ) AS all_project_time,
+    (
+      SELECT COALESCE(SUM(h.seconds), 0)
+      FROM hackatime_projects h
+      WHERE h.name = ANY(p.hackatime_project_keys)
+    ) AS proj_time
+  FROM projects p
+  WHERE p.hackatime_project_keys IS NOT NULL
+    AND cardinality(p.hackatime_project_keys) > 0
+    AND p.is_deleted = false AND where p.user_id = 5
+) sub
+WHERE (proj_time - all_project_time) >= 36000;
 `).then(d => d.rows)
 }
