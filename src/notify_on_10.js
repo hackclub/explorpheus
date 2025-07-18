@@ -46,7 +46,7 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app, db) {
       console.log(`skipping ${d.id} as already notified`)
       continue
     }
-    const diff = parseInt(d.proj_time) - parseInt(d.all_proj_time || "0")
+    const diff = parseInt(d.proj_time || "0") - parseInt(d.proj_time || "0")
     app.client.chat.postMessage({
       channel: `C091XDSB68G`,
       text: `omg  enon its happening :333:  ${diff} >= ${NINE_HOURS_IN_SECONDS} - project id: ${d.id}`
