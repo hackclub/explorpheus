@@ -39,10 +39,9 @@ export async function queryForProjectsWith10hPendingDevlogs(pg, app) {
   const data = await sqlQueryToGetData(pg)
   app.client.chat.postMessage({
     channel: `C091XDSB68G`,
-    text: `omg neon enon its happening :3332\n`
+    text: `omg n/eon enon its happening :3332\n`
   })
   for (const d of data) {
-    // if (d.user_id !== 5) continue; // for me only rnnn
     const diff = parseInt(d.proj_time) - parseInt(d.all_proj_time || "0")
     app.client.chat.postMessage({
       channel: `C091XDSB68G`,
