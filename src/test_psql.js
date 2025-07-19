@@ -5,30 +5,33 @@ const client = new Pool({
 });
 console.log("meow");
 const stamp = Date.now()
+// todo: find way to sum aa
 console.log(
   client.query(
-    `SELECT *
+    `SELECT *,
+       (proj_time - all_project_time) AS since_last_devlog
 FROM (
   SELECT
     p.id,
     p.user_id,
     p.title,
     (
-      SELECT COALESCE(SUM(d.seconds_coded), 0)
+      SELECT COALESCE(SUM(d.duration_seconds), 0)
       FROM devlogs d
       WHERE d.project_id = p.id
     ) AS all_project_time,
     (
       SELECT COALESCE(SUM(h.seconds), 0)
       FROM hackatime_projects h
-      WHERE h.name = ANY(p.hackatime_project_keys)
+      WHERE h.name = ANY(p.hackatime_project_keys)  
     ) AS proj_time
   FROM projects p
   WHERE p.hackatime_project_keys IS NOT NULL
     AND cardinality(p.hackatime_project_keys) > 0
-    AND p.is_deleted = false
+    AND p.is_deleted = false AND p.user_id = 14
 ) sub
 WHERE (proj_time - all_project_time) >= 36000;
+
 `,
     (_e, d) => {
       console.log(_e ? _e : d.rows)

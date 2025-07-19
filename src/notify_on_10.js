@@ -85,7 +85,7 @@ FROM (
     p.user_id,
     p.title,
     (
-      SELECT COALESCE(SUM(d.seconds_coded), 0)
+      SELECT COALESCE(SUM(d.duration_seconds), 0)
       FROM devlogs d
       WHERE d.project_id = p.id
     ) AS all_project_time,
