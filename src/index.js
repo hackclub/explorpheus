@@ -823,6 +823,7 @@ async function queryPayoutsAndUpdateThemUsers() {
           id: d.id,
           amount: d.amount,
           created_at: d.created_at,
+          type: d.payable_type
         };
       })
       return dd;
