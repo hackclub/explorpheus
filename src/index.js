@@ -890,7 +890,7 @@ retryLooped();
 sendQueueMessage();
 updatePayoutsLoop();
 // queryForProjectsWith10hPendingDevlogs(sompg, aclient, db)
-// setInterval(() => queryForProjectsWith10hPendingDevlogs(sompg, aclient, db), 60 * 1000 * 15)
+setInterval(() => queryForProjectsWith10hPendingDevlogs(sompg, aclient, db), 60 * 1000 * 15)
 aclient.client.chat.postMessage({
   channel: `U07L45W79E1`,
   text: `IM UP AND ALIVE NEON`
