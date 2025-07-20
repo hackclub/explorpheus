@@ -819,11 +819,10 @@ async function queryPayoutsAndUpdateThemUsers() {
       delete dd.channels_to_share_to;
       dd.payouts = dd.payouts.map((d) => {
         return {
-          type: d.payable_type,
           id: d.id,
           amount: d.amount,
           created_at: d.created_at,
-          type: d.payable_type
+          type: d.type
         };
       })
       return dd;
