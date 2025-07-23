@@ -18,7 +18,8 @@ const sompg = new Pool({
 });
 
 import envSchema from "./env.js";
-import { queryForProjectsWith10hPendingDevlogs } from "./notify_on_10.js";
+import { runTheCertsQuery } from "./certs.js";
+// import { queryForProjectsWith10hPendingDevlogs } from "./notify_on_10.js";
 const db = new JSONDb("./db.json");
 let try_again = db.get("try_again") || [];
 let alreadyCheckedEmails = [];
@@ -889,8 +890,9 @@ retryLooped();
 // magic-url
 sendQueueMessage();
 updatePayoutsLoop();
+runTheCertsQuery(PG, aclient, db);
 // queryForProjectsWith10hPendingDevlogs(sompg, aclient, db)
-setInterval(() => queryForProjectsWith10hPendingDevlogs(sompg, aclient, db), 60 * 1000 * 15)
+// setInterval(() => queryForProjectsWith10hPendingDevlogs(sompg, aclient, db), 60 * 1000 * 15)
 aclient.client.chat.postMessage({
   channel: `U07L45W79E1`,
   text: `IM UP AND ALIVE NEON`
