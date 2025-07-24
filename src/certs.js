@@ -23,7 +23,7 @@ WHERE ship_certifications.judgement != 0 AND users.id = 5`).then(d => d.rows)
 export async function runTheCertsQuery(pg, app, db) {
   const data = await queryDb(pg)
   for (const d of data) {
-    if (await db.get("certification:" + d.project_id)) {
+    if (await db.get("certification:" + d.id)) {
       console.log(`skipping ${d.project_id} as already notified`)
       continue
     }
