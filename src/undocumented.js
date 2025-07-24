@@ -123,9 +123,10 @@ export async function handleTeamJoinThing(
     {
       method: "POST",
       headers: {
-        "User-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
-        "X-Is-explorpheus": "rowan"
-      }
+        "User-agent":
+          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36",
+        "X-Is-explorpheus": "rowan",
+      },
     },
   );
   const text = await checkOnServersBackend.text();

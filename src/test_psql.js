@@ -4,7 +4,7 @@ const client = new Pool({
   connectionString: process.env.PG_CONNECTION_STRING_SOM,
 });
 console.log("meow");
-const stamp = Date.now()
+const stamp = Date.now();
 // todo: find way to sum aa
 console.log(
   client.query(
@@ -34,9 +34,11 @@ WHERE (proj_time - all_project_time) >= 36000;
 
 `,
     (_e, d) => {
-      console.log(_e ? _e : d.rows)
+      console.log(_e ? _e : d.rows);
 
-      console.log(`Took ${Date.now() - stamp}ms (${Math.round((Date.now() - stamp) / 1000)} seconds)`)
+      console.log(
+        `Took ${Date.now() - stamp}ms (${Math.round((Date.now() - stamp) / 1000)} seconds)`,
+      );
     },
   ),
 );
