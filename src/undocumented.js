@@ -104,7 +104,7 @@ async function uptimeSanityCheck(client, env, user) {
   ) {
     console.log(`User ${user} is already a full user– skipping`);
     // return;
-    fetch(env.UPTIME_URL_THING).catch((e) => {});
+    fetch(env.UPTIME_URL_THING).catch((e) => { });
   }
 }
 export async function handleTeamJoinThing(
@@ -149,7 +149,7 @@ export async function handleTeamJoinThing(
         channel: `C091XDSB68G`,
         text: `User <@${user}> tried to join but was not verified`,
       });
-    } catch (e) {}
+    } catch (e) { }
     last_5_users = last_5_users.slice(0, 5);
     return;
   }
@@ -172,7 +172,7 @@ export async function handleTeamJoinThing(
         channel: `C091XDSB68G`,
         text: `User <@${user}> has a bugged url!! ${MAGIC_URL} cc <@U07L45W79E1> <@U03DFNYGPCN>`,
       });
-    } catch (e) {}
+    } catch (e) { }
   }
   // dm them
   const textContent = `~1. Join Slack~\n*2. <${MAGIC_LINK}|Set up your account>* ← _YOU ARE HERE_\n3. Build a project\n4. :sparkles:Get prizes:sparkles: ԅ(◕‿◕ԅ)`;
@@ -231,12 +231,14 @@ export async function handleTeamJoinThing(
     client.chat.postMessage({
       channel: user,
       blocks: blocksContent,
+      unfurl_links: false,
       token: env.SLACK_XOXP,
     }),
     client.chat.postMessage({
       channel: user,
       text: textContent,
       blocks: blocksContent,
+      unfurl_links: false,
       username: "Explorpheus",
       icon_url:
         "https://hc-cdn.hel1.your-objectstorage.com/s/v3/d6d828d6ba656d09a62add59dc07e2974bfdb38f_image.png",
@@ -273,5 +275,5 @@ export async function handleTeamJoinThing(
       channel: `C091XDSB68G`,
       text: `User <@${user}> invited successfully`,
     });
-  } catch (e) {}
+  } catch (e) { }
 }

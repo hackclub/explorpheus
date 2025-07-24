@@ -1,12 +1,8 @@
 import "dotenv/config";
 import express from "express";
-// import { WebClient } from "@slack/web-api"
 const App = await import("@slack/bolt");
-// console.log([App.default])
 import { handleMCGInvite, handleTeamJoinThing } from "./undocumented.js";
-import { z } from "zod";
 import { AirtableFetch } from "./airtableFetch.js";
-import JSONDb from "simple-json-db";
 import expressStatusMonitor from "express-status-monitor";
 import Keyv from "keyv";
 import KeyvPostgres from "@keyv/postgres";
@@ -19,7 +15,6 @@ const sompg = new Pool({
 
 import envSchema from "./env.js";
 import { runTheCertsQuery } from "./certs.js";
-// import { queryForProjectsWith10hPendingDevlogs } from "./notify_on_10.js";
 const db = keyv
 let alreadyCheckedEmails = [];
 let env0 = envSchema.safeParse(process.env);
