@@ -40,5 +40,6 @@ export async function runTheCertsQuery(pg, app, db) {
       text: `${d.judgement == 2 ? ":neocat_thumbsdown:" : ":neocat_thumbsup:"} Your project https://summer.hackclub.com/projects/${projectId} has been *${judgement}* with the following reason:\n> ${notes}`
     })
     await db.set("certification:" + d.id, true)
+    await new Promise((r) => setTimeout(r, 900))
   }
 }
