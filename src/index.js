@@ -20,8 +20,7 @@ const sompg = new Pool({
 import envSchema from "./env.js";
 import { runTheCertsQuery } from "./certs.js";
 // import { queryForProjectsWith10hPendingDevlogs } from "./notify_on_10.js";
-const db = new JSONDb("./db.json");
-let try_again = db.get("try_again") || [];
+const db = keyv
 let alreadyCheckedEmails = [];
 let env0 = envSchema.safeParse(process.env);
 if (env0.error) {
@@ -147,20 +146,9 @@ async function sendQueueMessage() {
   }
 }
 app.get("/healthcheck", async (req, res) => {
-  // example db query  (yes ik its a json db ;-;)
-  db.set("1", 2);
   let is_fully_ok = false;
-  let is_db_ok = false;
   let is_my_db_ok = false;
   let is_som_db_ok = false;
-  try {
-    is_db_ok = db.get("1") === 2;
-    if (is_db_ok) {
-      is_fully_ok = true;
-    }
-  } catch (e) {
-    console.error("DB error", e);
-  }
   try {
     await keyv.set("test_key", "test_value");
     is_my_db_ok = true;
@@ -183,19 +171,15 @@ app.get("/healthcheck", async (req, res) => {
   if (is_fully_ok) {
     res.status(200).json({
       is_up,
-      is_db_ok,
       is_fully_ok,
       airtable_under_press,
-      is_db_ok,
       is_som_db_ok,
     });
   } else {
     res.status(500).json({
       is_up,
-      is_db_ok,
       is_fully_ok,
       airtable_under_press,
-      is_db_ok,
       is_som_db_ok,
     });
   }
@@ -256,11 +240,13 @@ aclient.event("team_join", async ({ event, context }) => {
     if (e.data && e.data.records) {
       console.error("Airtable error records:", e.data.records);
     }
+    let try_again = await db.get("try_again") || [];
+
     // add to try again queue
     try_again.push({
       user: event.user.id,
     });
-    db.set("try_again", try_again);
+    await db.set("try_again", try_again);
     try_agains++;
     last_tried_agained = Date.now();
     try {
@@ -853,6 +839,7 @@ async function updatePayoutsLoop() {
 
 async function reTryLoop() {
   const found = [];
+  let try_again = await db.get("try_again") || [];
   for (const { user } of try_again.slice(0, 10)) {
     try {
       try {
