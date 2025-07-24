@@ -890,7 +890,7 @@ retryLooped();
 // magic-url
 sendQueueMessage();
 updatePayoutsLoop();
-runTheCertsQuery(PG, aclient, db);
+runTheCertsQuery(sompg, aclient, db);
 // queryForProjectsWith10hPendingDevlogs(sompg, aclient, db)
 // setInterval(() => queryForProjectsWith10hPendingDevlogs(sompg, aclient, db), 60 * 1000 * 15)
 aclient.client.chat.postMessage({
