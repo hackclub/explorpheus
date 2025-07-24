@@ -66,12 +66,6 @@ app.use(
     healthChecks: [
       {
         protocol: "https",
-        host: env.DOMAIN_OF_HOST,
-        path: "/up",
-        port: "443",
-      },
-      {
-        protocol: "https",
         host: "explorpheus.hackclub.com",
         path: "/healthcheck",
         port: "443",
@@ -85,7 +79,7 @@ app.use(
     ],
   }),
 );
-app.get("/", (req, res) => res.send("hi:3"));
+app.get("/", (req, res) => res.redirect(`https://${env.DOMAIN_OF_HOST}`));
 
 // doTheQueueLoop()
 async function sendQueueMessage() {
@@ -262,6 +256,7 @@ aclient.action("button-action", async ({ body, ack, say }) => {
   button_clicks++;
   await ack();
 });
+
 aclient.event("app_home_opened", async ({ event, context }) => {
   const allowed_user_ids = [
     "U0C7B14Q3",
@@ -577,24 +572,6 @@ aclient.start(process.env.PORT).then(() => {
 });
 app.get("/leaderboard", async (req, res) => {
   try {
-    // const users_list = (await keyv.get("users_list")) || [];
-    // const users = await keyv.getMany(users_list.map((d) => `user_` + d));
-    // res.json(
-    //   (users || []).map((d) => {
-    //     delete d.channels_to_share_to;
-    //     return {
-    //       ...d,
-    //       payouts: d.payouts.map((dd) => {
-    //         return {
-    //           amount: dd.amount,
-    //           created_at: dd.created_at,
-    //           id: dd.id,
-    //           payable_type: dd.payable_type,
-    //         };
-    //       }),
-    //     };
-    //   })
-    // );
     res.json(await keyv.get(`lb_users`));
   } catch (e) {
     console.error(e);
@@ -881,8 +858,6 @@ retryLooped();
 sendQueueMessage();
 updatePayoutsLoop();
 setInterval(() => runTheCertsQuery(sompg, aclient, keyv), 60 * 1000 * 15);
-// queryForProjectsWith10hPendingDevlogs(sompg, aclient, db)
-// setInterval(() => queryForProjectsWith10hPendingDevlogs(sompg, aclient, db), 60 * 1000 * 15)
 aclient.client.chat.postMessage({
   channel: `U07L45W79E1`,
   text: `IM UP AND ALIVE NEON`,
