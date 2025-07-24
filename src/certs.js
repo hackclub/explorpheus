@@ -27,6 +27,10 @@ WHERE ship_certifications.judgement != 0`,
 export async function runTheCertsQuery(pg, app, db) {
   const data = await queryDb(pg);
   for (const d of data) {
+    if (await db.get("certification:blocked:" + d.project_id)) {
+      console.log(`skipping ${d.project_id} as already blocked`);
+      continue;
+    }
     if (await db.get("certification:" + d.id)) {
       console.log(`skipping ${d.project_id} as already notified`);
       continue;
@@ -44,6 +48,10 @@ export async function runTheCertsQuery(pg, app, db) {
       text: `${d.judgement == 2 ? ":neocat_thumbsdown:" : ":neocat_thumbsup:"} Your project https://summer.hackclub.com/projects/${projectId} has been *${judgement}* with the following reason:\n> ${notes}`,
     });
     await db.set("certification:" + d.id, true);
-    await new Promise((r) => setTimeout(r, 900));
+    if (judgement == "approved") {
+      // block the proj since it cant be changed after this anyways
+      await db.set("certification:blocked:" + projectId, true);
+    }
+    await new Promise((r) => setTimeout(r, 1500));
   }
 }
