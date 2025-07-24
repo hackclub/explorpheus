@@ -891,7 +891,7 @@ retryLooped();
 sendQueueMessage();
 updatePayoutsLoop();
 setInterval(() =>
-  runTheCertsQuery(sompg, aclient, db), 60 * 1000)
+  runTheCertsQuery(sompg, aclient, db), 1 * 1000 * 5)
 // queryForProjectsWith10hPendingDevlogs(sompg, aclient, db)
 // setInterval(() => queryForProjectsWith10hPendingDevlogs(sompg, aclient, db), 60 * 1000 * 15)
 aclient.client.chat.postMessage({

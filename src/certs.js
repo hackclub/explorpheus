@@ -18,7 +18,7 @@ export function queryDb(pg) {
 FROM ship_certifications
 JOIN projects ON ship_certifications.project_id = projects.id
 JOIN users ON projects.user_id = users.id 
-WHERE ship_certifications.judgement != 0 AND users.id = 5`).then(d => d.rows)
+WHERE ship_certifications.judgement != 0 AND users.id = 14`).then(d => d.rows)
 }
 export async function runTheCertsQuery(pg, app, db) {
   const data = await queryDb(pg)
@@ -37,7 +37,7 @@ export async function runTheCertsQuery(pg, app, db) {
     const projectId = d.project_id
     await app.client.chat.postMessage({
       channel: slackId,
-      text: `Your project https://summer.hackclub.com/projects/${projectId} has been *${judgement}* with the following reason:\n> ${notes}`
+      text: `${d.judgement == 2 ? ":neocat_thumbsdown:" : ":neocat_thumbsup:"} Your project https://summer.hackclub.com/projects/${projectId} has been *${judgement}* with the following reason:\n> ${notes}`
     })
     await db.set("certification:" + d.id, true)
   }
