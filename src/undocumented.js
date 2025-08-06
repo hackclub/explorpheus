@@ -118,6 +118,7 @@ export async function handleTeamJoinThing(
   const info = await client.users
     .info({ user: user })
     .then((d) => d.user.profile);
+  if (info.bot_id) return 0;
   const checkOnServersBackend = await fetch(
     `https://${env.DOMAIN_OF_HOST}/explorpheus/magic-link?token=${env.API_KEY}&email=${encodeURIComponent(info.email)}&slack_id=${user}`,
     {
