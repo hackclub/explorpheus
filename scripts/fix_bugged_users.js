@@ -4,7 +4,7 @@ import { handleTeamJoinThing } from "../src/undocumented.js";
 import { WebClient } from "@slack/web-api";
 import { AirtableFetch } from "../src/airtableFetch.js";
 const env = process.env;
-const client = new WebClient(process.env.SLACK_XOXB);
+const client = new WebClient(process.env.SLACK_XOXP);
 const airtable = new AirtableFetch({
   apiKey: env.AIRTABLE_KEY,
   baseID: env.BASE_ID,

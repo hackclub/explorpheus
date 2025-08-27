@@ -583,6 +583,8 @@ function getEmoji(type) {
       return "🛒";
     case "ShipEvent":
       return ":money_with_wings:";
+    case "JourneyPayoutStonks":
+      return "📈";
     default:
       return `:x: ${type} :x:`;
   }
